@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Padel Controller Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #121212; font-family: 'Montserrat', sans-serif; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; gap: 12px; -webkit-tap-highlight-color: transparent; }
+        h2 { margin: 5px 0; font-size: 16px; text-align: center; color: #c69f66; letter-spacing: 1px; text-transform: uppercase; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; }
+        .row:last-child { margin-bottom: 0; }
+        input[type="text"], input[type="number"] { flex: 1; background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; font-family: inherit; font-size: 14px; }
+        .btn { background: #333; color: white; border: none; padding: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.15s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-gold { background: linear-gradient(to bottom, #c69f66, #9c7a4b); color: white; }
+        .btn-green { background: #15803d; }
+        .btn-blue { background: #1d4ed8; }
+        .btn-red { background: #b91c1c; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .score-btn { height: 110px; border: none; border-radius: 12px; color: white; font-weight: 800; font-size: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .score-btn span { font-size: 34px; font-weight: 900; }
+        .serve-box { display: flex; gap: 10px; width: 100%; }
+        .serve-btn { flex: 1; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: #888; border-radius: 6px; font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        .serve-btn.active { background: #b28a55; color: white; border-color: #b28a55; }
+        .status-badge { background: #2a2a2a; color: #c69f66; padding: 6px 10px; font-size: 12px; border-radius: 4px; font-weight: 700; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .switch-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    </style>
+</head>
+<body>
+
+    <h2>Пульт Padel Pro (5 Сетів / Американо)</h2>
+
+    <div class="card">
+        <div class="row" style="gap:10px;">
+            <input type="text" id="p1-name-input" placeholder="Команда 1">
+            <input type="text" id="p2-name-input" placeholder="Команда 2">
+        </div>
+        <button class="btn btn-gold" style="width:100%" onclick="updateNames()">Оновити назви</button>
+    </div>
+
+    <!-- Перемикач режимів гри -->
+    <div class="card">
+        <div class="switch-row">
+            <span style="font-size:13px; font-weight:700;">Режим Американо:</span>
+            <input type="checkbox" id="mode-americano-checkbox" style="width:20px; height:20px; accent-color:#b28a55;" onchange="toggleAmericanoMode(this.checked)">
+        </div>
+        <div class="row" id="americano-limit-row" style="margin-top:10px; display:none;">
+            <span style="font-size:12px; color:#aaa;">Ліміт очок (1-30):</span>
+            <input type="number" id="s-americano-limit" min="1" max="30" value="16" style="width:70px; padding:6px; text-align:center;" onchange="updateAmericanoLimit(this.value)">
+        </div>
+    </div>
+
+    <div class="status-badge" id="mode-status">Режим: Сет 1 (Матч з 5 сетів)</div>
+
+    <div class="score-grid">
+        <button class="score-btn btn-green" onclick="scorePoint(1)">
+            <small id="lbl-p1">Команда 1</small>
+            <span id="view-p1-pts">0</span>
+        </button>
+        <button class="score-btn btn-blue" onclick="scorePoint(2)">
+            <small id="lbl-p2">Команда 2</small>
+            <span id="view-p2-pts">0</span>
+        </button>
+    </div>
+
+    <div class="card">
+        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Масштаб табла (OBS):</div>
+        <div class="row">
+            <input type="range" id="scale-slider" min="0.5" max="1.5" step="0.05" value="1" style="flex:1; accent-color:#b28a55;" oninput="updateScale(this.value)">
+            <span id="scale-factor-display" style="font-size:14px; font-weight:700; min-width:45px; text-align:right; color:#c69f66;">1.00x</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:11px; font-weight:700; margin-bottom:4px; color:#aaa; text-transform: uppercase;">Подача:</div>
+        <div class="serve-box">
+            <button class="serve-btn" id="srv-btn-1" onclick="setServer(1)">Подає К1 🎾</button>
+            <button class="serve-btn" id="srv-btn-2" onclick="setServer(2)">Подає К2 🎾</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Керування Логотипом спонсора:</div>
+        <div class="row">
+            <button class="btn" id="logo-visibility-btn" style="flex:1; background:#b28a55;" onclick="toggleLogoVisibility()">Сховати логотип</button>
+            <button class="btn btn-red" onclick="clearLogo()">Скинути лого</button>
+        </div>
+        <label class="btn btn-gold" style="display: block; text-align: center; margin-top: 8px;">
+            📁 Вибрати файл Логотипу
+            <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(event)">
+        </label>
+    </div>
+
+    <div class="card" id="manual-sets-card">
+        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Редагування 5 сетів вручну:</div>
+        <div class="row" style="gap:4px;">
+            <span style="font-size:11px; width:60px;">К1 (1-5):</span>
+            <input type="number" id="m-t1-s1" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t1-s2" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t1-s3" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t1-s4" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t1-s5" style="padding:4px; text-align:center;">
+        </div>
+        <div class="row" style="gap:4px; margin-bottom:10px;">
+            <span style="font-size:11px; width:60px;">К2 (1-5):</span>
+            <input type="number" id="m-t2-s1" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t2-s2" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t2-s3" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t2-s4" style="padding:4px; text-align:center;">
+            <input type="number" id="m-t2-s5" style="padding:4px; text-align:center;">
+        </div>
+        <div class="row">
+            <span style="font-size:12px;">Активний сет (1-5):</span>
+            <input type="number" id="m-cur-set" min="1" max="5" style="width:50px; padding:4px; text-align:center;">
+        </div>
+        <button class="btn" style="width:100%; background:#444; margin-top:5px;" onclick="updateSetsManual()">Зберегти налаштування сетів</button>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-red" style="flex:1" onclick="resetMatch()">Скинути матч</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf6PYBjF096FRE-fUUo5boS8jsieVS9xA",
+            authDomain: "padel3-overley.firebaseapp.com",
+            databaseURL: "https://padel3-overley-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "padel3-overley",
+            storageBucket: "padel3-overley.firebasestorage.app",
+            messagingSenderId: "1003185317510",
+            appId: "1:1003185317510:web:07be70f0d0354a1f0bd307"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const matchRef = ref(db, "padel/standalone_board");
+
+        const pointSequence = ['0', '15', '30', '40', 'AD'];
+        let state = {
+            p1name: "TELLO / ARCE", p2name: "GALAN / CHINGOTTO",
+            p1Index: 0, p2Index: 0, currentServer: 1, currentSet: 1, scale: 1,
+            isTiebreak: false, isAmericano: false, americanoLimit: 16, showLogo: true, logoSrc: "",
+            t1_s1: 0, t1_s2: 0, t1_s3: 0, t1_s4: 0, t1_s5: 0,
+            t2_s1: 0, t2_s2: 0, t2_s3: 0, t2_s4: 0, t2_s5: 0,
+            animation: { team: 0, type: "", ts: 0 }
+        };
+
+        onValue(matchRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                state = data;
+                document.getElementById('lbl-p1').innerText = state.p1name;
+                document.getElementById('lbl-p2').innerText = state.p2name;
+                
+                // Перемикання станів інтерфейсу для Американо
+                document.getElementById('mode-americano-checkbox').checked = !!state.isAmericano;
+                document.getElementById('americano-limit-row').style.display = state.isAmericano ? 'flex' : 'none';
+                document.getElementById('manual-sets-card').style.display = state.isAmericano ? 'none' : 'block';
+
+                if (state.isAmericano) {
+                    document.getElementById('mode-status').innerText = `🔥 РЕЖИМ АМЕРИКАНО (ЛІМІТ: ${state.americanoLimit || 16})`;
+                    document.getElementById('view-p1-pts').innerText = state.p1Index;
+                    document.getElementById('view-p2-pts').innerText = state.p2Index;
+                } else if (state.isTiebreak) {
+                    document.getElementById('mode-status').innerText = "🔥 РЕЖИМ ТАЙБРЕЙКУ (ДО 7)";
+                    document.getElementById('view-p1-pts').innerText = state.p1Index;
+                    document.getElementById('view-p2-pts').innerText = state.p2Index;
+                } else {
+                    document.getElementById('mode-status').innerText = `Режим: Сет ${state.currentSet || 1} (Матч з 5 сетів)`;
+                    document.getElementById('view-p1-pts').innerText = state.p1Index === 4 ? "AD" : (state.p2Index === 4 ? "" : pointSequence[state.p1Index]);
+                    document.getElementById('view-p2-pts').innerText = state.p2Index === 4 ? "AD" : (state.p1Index === 4 ? "" : pointSequence[state.p2Index]);
+                }
+                
+                document.getElementById('srv-btn-1').classList.toggle('active', state.currentServer === 1);
+                document.getElementById('srv-btn-2').classList.toggle('active', state.currentServer === 2);
+                document.getElementById('logo-visibility-btn').innerText = state.showLogo ? "Сховати логотип" : "Показати логотип";
+                
+                const currentScale = state.scale || 1;
+                document.getElementById('scale-slider').value = currentScale;
+                document.getElementById('scale-factor-display').innerText = currentScale.toFixed(2) + "x";
+
+                document.getElementById('m-t1-s1').value = state.t1_s1 || 0;
+                document.getElementById('m-t1-s2').value = state.t1_s2 || 0;
+                document.getElementById('m-t1-s3').value = state.t1_s3 || 0;
+                document.getElementById('m-t1-s4').value = state.t1_s4 || 0;
+                document.getElementById('m-t1-s5').value = state.t1_s5 || 0;
+                
+                document.getElementById('m-t2-s1').value = state.t2_s1 || 0;
+                document.getElementById('m-t2-s2').value = state.t2_s2 || 0;
+                document.getElementById('m-t2-s3').value = state.t2_s3 || 0;
+                document.getElementById('m-t2-s4').value = state.t2_s4 || 0;
+                document.getElementById('m-t2-s5').value = state.t2_s5 || 0;
+                
+                document.getElementById('m-cur-set').value = state.currentSet || 1;
+                document.getElementById('s-americano-limit').value = state.americanoLimit || 16;
+            }
+        });
+
+        window.scorePoint = function(teamIndex) {
+            if (state.isAmericano) {
+                // ЛОГІКА РЕЖИМУ АМЕРИКАНО
+                if (teamIndex === 1) state.p1Index++;
+                else state.p2Index++;
+                
+                let total = state.p1Index + state.p2Index;
+                let limit = parseInt(state.americanoLimit) || 16;
+                
+                if (state.p1Index >= limit || state.p2Index >= limit) {
+                    state.animation = { team: teamIndex, type: 'set', ts: Date.now() };
+                    alert("Матч Американо завершено!");
+                } else {
+                    // АВТОМАТИЧНЕ КЕРУВАННЯ ПОДАЧАМИ: перша подача — одна, далі кожні дві
+                    if (total === 1 || (total > 1 && (total - 1) % 2 === 0)) {
+                        state.currentServer = state.currentServer === 1 ? 2 : 1;
+                    }
+                }
+            } else if (state.isTiebreak) {
+                // ЛОГІКА ТАЙБРЕЙКУ
+                if (teamIndex === 1) state.p1Index++;
+                else state.p2Index++;
+                
+                if (state.p1Index >= 7 && (state.p1Index - state.p2Index >= 2)) {
+                    winGame(1);
+                } else if (state.p2Index >= 7 && (state.p2Index - state.p1Index >= 2)) {
+                    winGame(2);
+                }
+            } else {
+                // СТАНДАРТНА КЛАСИЧНА ЛОГІКА (15, 30, 40, AD, БІЛЬШЕ-МЕНШЕ) ДЛЯ ВСІХ СЕТІВ 1-5
+                if (teamIndex === 1) {
+                    if (state.p1Index === 3 && state.p2Index === 3) state.p1Index = 4; 
+                    else if (state.p1Index === 3 && state.p2Index === 4) state.p2Index = 3; 
+                    else if (state.p1Index === 4) winGame(1); 
+                    else if (state.p1Index === 3 && state.p2Index < 3) winGame(1); 
+                    else state.p1Index++;
+                } else {
+                    if (state.p2Index === 3 && state.p1Index === 3) state.p2Index = 4; 
+                    else if (state.p2Index === 3 && state.p1Index === 4) state.p1Index = 3; 
+                    else if (state.p2Index === 4) winGame(2); 
+                    else if (state.p2Index === 3 && state.p1Index < 3) winGame(2); 
+                    else state.p2Index++;
+                }
+            }
+            set(matchRef, state);
+        }
+
+        function winGame(winningTeam) {
+            state.p1Index = 0;
+            state.p2Index = 0;
+            state.isTiebreak = false;
+            
+            let cSet = state.currentSet || 1;
+            if (winningTeam === 1) state[`t1_s${cSet}`] = (state[`t1_s${cSet}`] || 0) + 1;
+            else state[`t2_s${cSet}`] = (state[`t2_s${cSet}`] || 0) + 1;
+            
+            let g1 = state[`t1_s${cSet}`];
+            let g2 = state[`t2_s${cSet}`];
+            
+            let isSetOver = false;
+            if ((g1 >= 6 && g1 - g2 >= 2) || g1 === 7) isSetOver = true;
+            else if ((g2 >= 6 && g2 - g1 >= 2) || g2 === 7) isSetOver = true;
+            else if (g1 === 6 && g2 === 6) state.isTiebreak = true;
+            
+            state.animation = {
+                team: winningTeam,
+                type: isSetOver ? 'set' : 'game',
+                ts: Date.now()
+            };
+
+            // ПЕРЕХІД СПОЧАТКУ НОВОГО СЕТУ (ПІДТРИМКА ДО 5 СЕТІВ)
+            if (isSetOver) {
+                if (state.currentSet < 5) {
+                    state.currentSet++;
+                    state[`t1_s${state.currentSet}`] = 0;
+                    state[`t2_s${state.currentSet}`] = 0;
+                } else {
+                    alert("Матч з 5 сетів завершено!");
+                }
+            }
+            
+            state.currentServer = state.currentServer === 1 ? 2 : 1;
+        }
+
+        window.toggleAmericanoMode = function(isChecked) {
+            state.isAmericano = isChecked;
+            state.p1Index = 0;
+            state.p2Index = 0;
+            state.isTiebreak = false;
+            set(matchRef, state);
+        };
+
+        window.updateAmericanoLimit = function(val) {
+            let parsed = parseInt(val) || 16;
+            if (parsed < 1) parsed = 1;
+            if (parsed > 30) parsed = 30;
+            state.americanoLimit = parsed;
+            set(matchRef, state);
+        };
+
+        window.updateScale = function(val) {
+            state.scale = parseFloat(val);
+            document.getElementById('scale-factor-display').innerText = state.scale.toFixed(2) + "x";
+            set(matchRef, state);
+        };
+
+        window.setServer = function(srv) { state.currentServer = srv; set(matchRef, state); }
+        window.updateNames = function() {
+            const p1n = document.getElementById('p1-name-input').value;
+            const p2n = document.getElementById('p2-name-input').value;
+            if(p1n) state.p1name = p1n;
+            if(p2n) state.p2name = p2n;
+            set(matchRef, state);
+        }
+        window.toggleLogoVisibility = function() { state.showLogo = !state.showLogo; set(matchRef, state); }
+        window.uploadLogo = function(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) { state.logoSrc = evt.target.result; set(matchRef, state); };
+            reader.readAsDataURL(file);
+        }
+        window.clearLogo = function() { state.logoSrc = ""; set(matchRef, state); }
+        
+        window.updateSetsManual = function() {
+            state.t1_s1 = parseInt(document.getElementById('m-t1-s1').value) || 0;
+            state.t1_s2 = parseInt(document.getElementById('m-t1-s2').value) || 0;
+            state.t1_s3 = parseInt(document.getElementById('m-t1-s3').value) || 0;
+            state.t1_s4 = parseInt(document.getElementById('m-t1-s4').value) || 0;
+            state.t1_s5 = parseInt(document.getElementById('m-t1-s5').value) || 0;
+            
+            state.t2_s1 = parseInt(document.getElementById('m-t2-s1').value) || 0;
+            document.getElementById('m-t2-s2').value = state.t2_s2 = parseInt(document.getElementById('m-t2-s2').value) || 0;
+            state.t2_s3 = parseInt(document.getElementById('m-t2-s3').value) || 0;
+            state.t2_s4 = parseInt(document.getElementById('m-t2-s4').value) || 0;
+            state.t2_s5 = parseInt(document.getElementById('m-t2-s5').value) || 0;
+            
+            state.currentSet = parseInt(document.getElementById('m-cur-set').value) || 1;
+            set(matchRef, state);
+        }
+
+        window.resetMatch = function() {
+            if(confirm("Скинути матч?")) {
+                set(matchRef, {
+                    p1name: "TELLO / ARCE", p2name: "GALAN / CHINGOTTO",
+                    p1Index: 0, p2Index: 0, currentServer: 1, currentSet: 1, scale: state.scale || 1,
+                    isTiebreak: false, isAmericano: false, americanoLimit: 16, showLogo: true, logoSrc: state.logoSrc || "",
+                    t1_s1: 0, t1_s2: 0, t1_s3: 0, t1_s4: 0, t1_s5: 0,
+                    t2_s1: 0, t2_s2: 0, t2_s3: 0, t2_s4: 0, t2_s5: 0,
+                    animation: { team: 0, type: "", ts: 0 }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
