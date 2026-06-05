@@ -6,7 +6,7 @@
     <title>Padel Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Абсолютно чистий прозорий фон для екрана трансляції OBS */
+        /* Чистий прозорий фон для OBS Studio */
         html, body {
             background: transparent !important;
             background-color: transparent !important;
@@ -108,7 +108,7 @@
 
         .score-box {
             width: 40px;
-            display: none; /* Повністю виключені з потоку за замовчуванням */
+            display: none;
             justify-content: center;
             align-items: center;
             font-size: 26px;
@@ -152,7 +152,6 @@
                     <span id="name-display-t1">TELLO / ARCE</span>
                     <span class="server-indicator" id="srv1">🎾</span>
                 </div>
-                <!-- Комірки 5 сетів для послідовної появи без пустих зазорів -->
                 <div class="score-box" id="t1-s1">0</div>
                 <div class="score-box" id="t1-s2">0</div>
                 <div class="score-box" id="t1-s3">0</div>
@@ -179,38 +178,41 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
+        // Оновлений Firebase Config згідно з твоїм запитом
         const firebaseConfig = {
-            apiKey: "AIzaSyDf6PYBjF096FRE-fUUo5boS8jsieVS9xA",
-            authDomain: "padel3-overley.firebaseapp.com",
-            databaseURL: "https://padel3-overley-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "padel3-overley",
-            storageBucket: "padel3-overley.firebasestorage.app",
-            messagingSenderId: "1003185317510",
-            appId: "1:1003185317510:web:07be70f0d0354a1f0bd307"
+            apiKey: "AIzaSyDKOG6SqtMdktckIlXHKWoPZKOwME0yr1M",
+            authDomain: "padel-2-gurskyj.firebaseapp.com",
+            databaseURL: "https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "padel-2-gurskyj",
+            storageBucket: "padel-2-gurskyj.firebasestorage.app",
+            messagingSenderId: "671715970020",
+            appId: "1:671715970020:web:d95bd60210ebcba6a915f1",
+            measurementId: "G-3NLYX413C9"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const analytics = getAnalytics(app);
+        
         const pointSequence = ['0', '15', '30', '40', 'AD'];
         let lastAnimationTs = 0;
 
-        onValue(ref(db, "padel/standalone_board"), (snapshot) => {
+        onValue(ref(db, "padel/match_state"), (snapshot) => {
             const state = snapshot.val();
             if (state) {
                 document.getElementById('name-display-t1').innerText = state.p1name || "Команда 1";
                 document.getElementById('name-display-t2').innerText = state.p2name || "Команда 2";
                 
-                // Масштабування оверлею
                 const currentScale = state.scale || 1;
                 document.getElementById('main-scoreboard').style.transform = `scale(${currentScale})`;
 
-                // Спонсор / Режим Американо
                 const sBlock = document.getElementById('sponsor-block');
                 sBlock.classList.toggle('visible', !!state.showLogo);
                 
                 if (state.isAmericano) {
-                    document.getElementById('sponsor-text-node').innerHTML = "AMERICANE<br><span>MODE</span>";
+                    document.getElementById('sponsor-text-node').innerHTML = "AMERICANO<br><span>MODE</span>";
                     document.getElementById('sponsor-img-node').style.display = 'none';
                 } else if (state.logoSrc) {
                     document.getElementById('sponsor-text-node').style.display = 'none';
@@ -222,7 +224,6 @@
                     document.getElementById('sponsor-img-node').style.display = 'none';
                 }
 
-                // Керування показом поточних очок розіграшу
                 if (state.isAmericano || state.isTiebreak) {
                     document.getElementById('t1-pts').innerText = state.p1Index;
                     document.getElementById('t2-pts').innerText = state.p2Index;
@@ -234,7 +235,6 @@
                 document.getElementById('srv1').classList.toggle('active', state.currentServer === 1);
                 document.getElementById('srv2').classList.toggle('active', state.currentServer === 2);
                 
-                // ЛОГІКА ЧИСТОГО ПОСЛІДОВНОГО ДОДАВАННЯ РАМОК СЕТІВ
                 const activeSet = state.currentSet || 1;
                 for (let s = 1; s <= 5; s++) {
                     const box1 = document.getElementById(`t1-s${s}`);
@@ -250,31 +250,22 @@
                     const g2 = state[`t2_s${s}`] !== undefined ? parseInt(state[`t2_s${s}`]) : 0;
                     
                     if (s < activeSet) {
-                        // Повністю зіграний сет — показуємо рамку з білим кольором результату
                         box1.style.display = 'flex'; box1.className = 'score-box set-past';
                         box2.style.display = 'flex'; box2.className = 'score-box set-past';
-                        box1.innerText = g1;
-                        box2.innerText = g2;
+                        box1.innerText = g1; box2.innerText = g2;
                     } else if (s === activeSet) {
-                        // Поточний сет — додаємо рамку лише тоді, коли зіграно хоча б 1 гейм (g1 > 0 або g2 > 0)
                         if (g1 > 0 || g2 > 0) {
                             box1.style.display = 'flex'; box1.className = 'score-box set-current';
                             box2.style.display = 'flex'; box2.className = 'score-box set-current';
-                            box1.innerText = g1;
-                            box2.innerText = g2;
+                            box1.innerText = g1; box2.innerText = g2;
                         } else {
-                            // Якщо в поточному сеті 0-0, рамка повністю забирається з ефіру
-                            box1.style.display = 'none';
-                            box2.style.display = 'none';
+                            box1.style.display = 'none'; box2.style.display = 'none';
                         }
                     } else {
-                        // Усі майбутні неактивні сети повністю приховані
-                        box1.style.display = 'none';
-                        box2.style.display = 'none';
+                        box1.style.display = 'none'; box2.style.display = 'none';
                     }
                 }
 
-                // Системні спалахи для виграшу розіграшів
                 if (state.animation && state.animation.ts !== lastAnimationTs) {
                     lastAnimationTs = state.animation.ts;
                     const winTeam = state.animation.team;
