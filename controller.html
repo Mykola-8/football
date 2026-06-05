@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&display=swap" rel="stylesheet">
     <style>
         body { background-color: #121212; font-family: 'Montserrat', sans-serif; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; gap: 12px; -webkit-tap-highlight-color: transparent; }
-        h2 { margin: 5px 0; font-size: 16px; text-align: center; color: #c69f66; letter-spacing: 1px; text-transform: uppercase; }
+        h2 { margin: 5px 0; font-size: 14px; text-align: center; color: #c69f66; letter-spacing: 1px; text-transform: uppercase; }
         .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; }
         .row:last-child { margin-bottom: 0; }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-    <h2>Пульт Padel Pro (5 Сетів / Американо)</h2>
+    <h2>Пульт Padel (Firebase Web App)</h2>
 
     <div class="card">
         <div class="row" style="gap:10px;">
@@ -40,7 +40,6 @@
         <button class="btn btn-gold" style="width:100%" onclick="updateNames()">Оновити назви</button>
     </div>
 
-    <!-- Перемикач режимів гри -->
     <div class="card">
         <div class="switch-row">
             <span style="font-size:13px; font-weight:700;">Режим Американо:</span>
@@ -52,7 +51,7 @@
         </div>
     </div>
 
-    <div class="status-badge" id="mode-status">Режим: Сет 1 (Матч з 5 сетів)</div>
+    <div class="status-badge" id="mode-status">Завантаження стану...</div>
 
     <div class="score-grid">
         <button class="score-btn btn-green" onclick="scorePoint(1)">
@@ -82,7 +81,7 @@
     </div>
 
     <div class="card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Керування Логотипом спонсора:</div>
+        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Керування Логотипом:</div>
         <div class="row">
             <button class="btn" id="logo-visibility-btn" style="flex:1; background:#b28a55;" onclick="toggleLogoVisibility()">Сховати логотип</button>
             <button class="btn btn-red" onclick="clearLogo()">Скинути лого</button>
@@ -94,7 +93,7 @@
     </div>
 
     <div class="card" id="manual-sets-card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Редагування 5 сетів вручну:</div>
+        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Коригування 5 сетів вручну:</div>
         <div class="row" style="gap:4px;">
             <span style="font-size:11px; width:60px;">К1 (1-5):</span>
             <input type="number" id="m-t1-s1" style="padding:4px; text-align:center;">
@@ -115,7 +114,7 @@
             <span style="font-size:12px;">Активний сет (1-5):</span>
             <input type="number" id="m-cur-set" min="1" max="5" style="width:50px; padding:4px; text-align:center;">
         </div>
-        <button class="btn" style="width:100%; background:#444; margin-top:5px;" onclick="updateSetsManual()">Зберегти налаштування сетів</button>
+        <button class="btn" style="width:100%; background:#444; margin-top:5px;" onclick="updateSetsManual()">Зберегти зміни сетів</button>
     </div>
 
     <div class="row">
@@ -125,20 +124,24 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
+        // Оновлений Firebase Config згідно з твоїм запитом
         const firebaseConfig = {
-            apiKey: "AIzaSyDf6PYBjF096FRE-fUUo5boS8jsieVS9xA",
-            authDomain: "padel3-overley.firebaseapp.com",
-            databaseURL: "https://padel3-overley-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "padel3-overley",
-            storageBucket: "padel3-overley.firebasestorage.app",
-            messagingSenderId: "1003185317510",
-            appId: "1:1003185317510:web:07be70f0d0354a1f0bd307"
+            apiKey: "AIzaSyDKOG6SqtMdktckIlXHKWoPZKOwME0yr1M",
+            authDomain: "padel-2-gurskyj.firebaseapp.com",
+            databaseURL: "https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "padel-2-gurskyj",
+            storageBucket: "padel-2-gurskyj.firebasestorage.app",
+            messagingSenderId: "671715970020",
+            appId: "1:671715970020:web:d95bd60210ebcba6a915f1",
+            measurementId: "G-3NLYX413C9"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const matchRef = ref(db, "padel/standalone_board");
+        const analytics = getAnalytics(app);
+        const matchRef = ref(db, "padel/match_state");
 
         const pointSequence = ['0', '15', '30', '40', 'AD'];
         let state = {
@@ -157,21 +160,20 @@
                 document.getElementById('lbl-p1').innerText = state.p1name;
                 document.getElementById('lbl-p2').innerText = state.p2name;
                 
-                // Перемикання станів інтерфейсу для Американо
                 document.getElementById('mode-americano-checkbox').checked = !!state.isAmericano;
                 document.getElementById('americano-limit-row').style.display = state.isAmericano ? 'flex' : 'none';
                 document.getElementById('manual-sets-card').style.display = state.isAmericano ? 'none' : 'block';
 
                 if (state.isAmericano) {
-                    document.getElementById('mode-status').innerText = `🔥 РЕЖИМ АМЕРИКАНО (ЛІМІТ: ${state.americanoLimit || 16})`;
+                    document.getElementById('mode-status').innerText = `🔥 АМЕРИКАНО (ЛІМІТ: ${state.americanoLimit || 16})`;
                     document.getElementById('view-p1-pts').innerText = state.p1Index;
                     document.getElementById('view-p2-pts').innerText = state.p2Index;
                 } else if (state.isTiebreak) {
-                    document.getElementById('mode-status').innerText = "🔥 РЕЖИМ ТАЙБРЕЙКУ (ДО 7)";
+                    document.getElementById('mode-status').innerText = "🔥 ТАЙБРЕЙК (ДО 7)";
                     document.getElementById('view-p1-pts').innerText = state.p1Index;
                     document.getElementById('view-p2-pts').innerText = state.p2Index;
                 } else {
-                    document.getElementById('mode-status').innerText = `Режим: Сет ${state.currentSet || 1} (Матч з 5 сетів)`;
+                    document.getElementById('mode-status').innerText = `Сет ${state.currentSet || 1} (Класичний матч)`;
                     document.getElementById('view-p1-pts').innerText = state.p1Index === 4 ? "AD" : (state.p2Index === 4 ? "" : pointSequence[state.p1Index]);
                     document.getElementById('view-p2-pts').innerText = state.p2Index === 4 ? "AD" : (state.p1Index === 4 ? "" : pointSequence[state.p2Index]);
                 }
@@ -203,7 +205,6 @@
 
         window.scorePoint = function(teamIndex) {
             if (state.isAmericano) {
-                // ЛОГІКА РЕЖИМУ АМЕРИКАНО
                 if (teamIndex === 1) state.p1Index++;
                 else state.p2Index++;
                 
@@ -214,13 +215,11 @@
                     state.animation = { team: teamIndex, type: 'set', ts: Date.now() };
                     alert("Матч Американо завершено!");
                 } else {
-                    // АВТОМАТИЧНЕ КЕРУВАННЯ ПОДАЧАМИ: перша подача — одна, далі кожні дві
                     if (total === 1 || (total > 1 && (total - 1) % 2 === 0)) {
                         state.currentServer = state.currentServer === 1 ? 2 : 1;
                     }
                 }
             } else if (state.isTiebreak) {
-                // ЛОГІКА ТАЙБРЕЙКУ
                 if (teamIndex === 1) state.p1Index++;
                 else state.p2Index++;
                 
@@ -230,7 +229,6 @@
                     winGame(2);
                 }
             } else {
-                // СТАНДАРТНА КЛАСИЧНА ЛОГІКА (15, 30, 40, AD, БІЛЬШЕ-МЕНШЕ) ДЛЯ ВСІХ СЕТІВ 1-5
                 if (teamIndex === 1) {
                     if (state.p1Index === 3 && state.p2Index === 3) state.p1Index = 4; 
                     else if (state.p1Index === 3 && state.p2Index === 4) state.p2Index = 3; 
@@ -271,76 +269,45 @@
                 ts: Date.now()
             };
 
-            // ПЕРЕХІД СПОЧАТКУ НОВОГО СЕТУ (ПІДТРИМКА ДО 5 СЕТІВ)
             if (isSetOver) {
                 if (state.currentSet < 5) {
                     state.currentSet++;
                     state[`t1_s${state.currentSet}`] = 0;
                     state[`t2_s${state.currentSet}`] = 0;
                 } else {
-                    alert("Матч з 5 сетів завершено!");
+                    alert("Матч завершено!");
                 }
             }
-            
             state.currentServer = state.currentServer === 1 ? 2 : 1;
         }
 
         window.toggleAmericanoMode = function(isChecked) {
-            state.isAmericano = isChecked;
-            state.p1Index = 0;
-            state.p2Index = 0;
-            state.isTiebreak = false;
-            set(matchRef, state);
+            state.isAmericano = isChecked; state.p1Index = 0; state.p2Index = 0; state.isTiebreak = false; set(matchRef, state);
         };
-
         window.updateAmericanoLimit = function(val) {
-            let parsed = parseInt(val) || 16;
-            if (parsed < 1) parsed = 1;
-            if (parsed > 30) parsed = 30;
-            state.americanoLimit = parsed;
-            set(matchRef, state);
+            let parsed = parseInt(val) || 16; state.americanoLimit = Math.max(1, Math.min(30, parsed)); set(matchRef, state);
         };
-
         window.updateScale = function(val) {
-            state.scale = parseFloat(val);
-            document.getElementById('scale-factor-display').innerText = state.scale.toFixed(2) + "x";
-            set(matchRef, state);
+            state.scale = parseFloat(val); document.getElementById('scale-factor-display').innerText = state.scale.toFixed(2) + "x"; set(matchRef, state);
         };
-
         window.setServer = function(srv) { state.currentServer = srv; set(matchRef, state); }
         window.updateNames = function() {
-            const p1n = document.getElementById('p1-name-input').value;
-            const p2n = document.getElementById('p2-name-input').value;
-            if(p1n) state.p1name = p1n;
-            if(p2n) state.p2name = p2n;
-            set(matchRef, state);
+            const p1n = document.getElementById('p1-name-input').value; const p2n = document.getElementById('p2-name-input').value;
+            if(p1n) state.p1name = p1n; if(p2n) state.p2name = p2n; set(matchRef, state);
         }
         window.toggleLogoVisibility = function() { state.showLogo = !state.showLogo; set(matchRef, state); }
         window.uploadLogo = function(e) {
             const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) { state.logoSrc = evt.target.result; set(matchRef, state); };
-            reader.readAsDataURL(file);
+            const reader = new FileReader(); reader.onload = function(evt) { state.logoSrc = evt.target.result; set(matchRef, state); }; reader.readAsDataURL(file);
         }
         window.clearLogo = function() { state.logoSrc = ""; set(matchRef, state); }
-        
         window.updateSetsManual = function() {
-            state.t1_s1 = parseInt(document.getElementById('m-t1-s1').value) || 0;
-            state.t1_s2 = parseInt(document.getElementById('m-t1-s2').value) || 0;
-            state.t1_s3 = parseInt(document.getElementById('m-t1-s3').value) || 0;
-            state.t1_s4 = parseInt(document.getElementById('m-t1-s4').value) || 0;
-            state.t1_s5 = parseInt(document.getElementById('m-t1-s5').value) || 0;
-            
-            state.t2_s1 = parseInt(document.getElementById('m-t2-s1').value) || 0;
-            document.getElementById('m-t2-s2').value = state.t2_s2 = parseInt(document.getElementById('m-t2-s2').value) || 0;
-            state.t2_s3 = parseInt(document.getElementById('m-t2-s3').value) || 0;
-            state.t2_s4 = parseInt(document.getElementById('m-t2-s4').value) || 0;
-            state.t2_s5 = parseInt(document.getElementById('m-t2-s5').value) || 0;
-            
-            state.currentSet = parseInt(document.getElementById('m-cur-set').value) || 1;
-            set(matchRef, state);
+            for(let i=1; i<=5; i++) {
+                state[`t1_s${i}`] = parseInt(document.getElementById(`m-t1-s${i}`).value) || 0;
+                state[`t2_s${i}`] = parseInt(document.getElementById(`m-t2-s${i}`).value) || 0;
+            }
+            state.currentSet = parseInt(document.getElementById('m-cur-set').value) || 1; set(matchRef, state);
         }
-
         window.resetMatch = function() {
             if(confirm("Скинути матч?")) {
                 set(matchRef, {
