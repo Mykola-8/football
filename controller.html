@@ -146,7 +146,8 @@ button.big{padding:16px 18px;font-size:18px}
   <div class="card">
     <h2>Що показувати</h2>
     <div class="btns" style="margin-bottom:10px">
-      <button class="big" data-toggle="ui.bug" onclick="tog('ui.bug')">Табло рахунку</button>
+      <button class="big" data-toggle="ui.bug" onclick="tog('ui.bug')">Табло постійно</button>
+      <button class="big act" onclick="showBarNow()">Показати табло (на авто-час)</button>
       <button class="big" data-toggle="big.show" onclick="tog('big.show')">Велике табло</button>
     </div>
     <div class="row">
@@ -172,6 +173,11 @@ button.big{padding:16px 18px;font-size:18px}
     <div class="row">
       <label class="f">Назви команд<select data-path="ui.names"><option value="full">Повні</option><option value="short">Скорочені</option></select></label>
     </div>
+    <div class="row"><label class="f">Тип табло<select data-path="ui.board"><option value="wide">Великий нижній бар</option><option value="bug">Компактне</option></select></label></div>
+    <div class="row"><button class="sm" data-toggle="ui.auto" onclick="tog('ui.auto')">Авто-показ (старт, гол)</button><button class="sm" data-toggle="ui.goalBanner" onclick="tog('ui.goalBanner')">Анімація «ГОЛ!»</button></div>
+    <div class="row"><label class="f">Час показу табло <b class="val" data-val="ui.autoDur"></b><input type="range" min="3" max="30" step="1" data-path="ui.autoDur" data-num="1"></label></div>
+    <div class="row"><label class="f">Затримка після гола <b class="val" data-val="ui.goalDelay"></b><input type="range" min="0" max="10" step="1" data-path="ui.goalDelay" data-num="1"></label></div>
+    <div class="row"><label class="f">Емблема турніру між рахунками (URL)<input type="url" data-path="ui.emblem" placeholder="https://..."></label></div>
     <div class="row"><label class="f">Стиль табло<select data-path="ui.style"><option value="classic">Класика</option><option value="round">Закруглений</option><option value="pill">Капсула</option><option value="glass">Скло</option></select></label></div>
     <div class="row"><label class="f">Масштаб <b class="val" data-val="ui.scale"></b><input type="range" min="0.4" max="2.5" step="0.05" data-path="ui.scale" data-num="1"></label></div>
     <div class="row"><label class="f">Позиція по горизонталі (← →) <b class="val" data-val="ui.x"></b><input type="range" min="-960" max="960" step="5" data-path="ui.x" data-num="1"></label></div>
@@ -285,7 +291,7 @@ const DEF={
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:true,hideBugOnBig:true,style:'classic',x:0,y:0},
+  ui:{pos:'bc',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,style:'classic',x:0,y:0,board:'wide',auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblem:'',v2:0},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   events:[],fx:null,rev:0
@@ -324,6 +330,8 @@ let cfg={db:'https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.
 try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfg')||'{}'));}catch(e){}
 let S=merge(DEF,{});
 try{const ls=localStorage.getItem('fb_state_'+cfg.court);if(ls)S=merge(DEF,JSON.parse(ls));}catch(e){}
+function migrate(){if(!S.ui.v2){S.ui.pos='bc';S.ui.bug=false;S.ui.v2=1;}}
+migrate();
 let bc=null;
 function openBC(){try{if(bc)bc.close();bc=new BroadcastChannel('fb_football_'+cfg.court);}catch(e){bc=null;}}
 openBC();
@@ -363,7 +371,8 @@ function minuteLabel(sec,period){
   const lim=LIM[period]||({ht:45}[period]);
   return (lim&&m>lim)?lim+'+'+(m-lim):String(m);
 }
-function startClock(){if(S.clock.running)return;S.clock.startedAt=Date.now();S.clock.running=true;commit();}
+function startClock(){if(S.clock.running)return;S.clock.startedAt=Date.now();S.clock.running=true;commit(S.ui.auto?{id:uid(),ts:Date.now(),type:'bar'}:null);}
+function showBarNow(){commit({id:uid(),ts:Date.now(),type:'bar'});}
 function pauseClock(){if(!S.clock.running)return;S.clock.base=clockSec();S.clock.running=false;commit();}
 function toggleClock(){S.clock.running?pauseClock():startClock();}
 function setClock(sec){S.clock.base=Math.max(0,sec);S.clock.startedAt=Date.now();commit();}
@@ -387,9 +396,10 @@ function goal(team){
   const kind=$('kind_'+team).value;const player=$('pl_'+team).value.trim();
   const sec=clockSec();const minute=minuteLabel(sec,S.clock.period);
   S[team].score++;
-  S.events.push({id:uid(),team,type:'goal',player,kind,minute,sec:Math.floor(sec)});
+  const ev={id:uid(),team,type:'goal',player,kind,minute,sec:Math.floor(sec)};
+  S.events.push(ev);
   $('pl_'+team).value='';$('kind_'+team).value='';
-  commit({id:uid(),ts:Date.now(),type:'goal',team,player,kind,minute});
+  commit({id:uid(),ts:Date.now(),type:'goal',team,player,kind,minute,eid:ev.id});
 }
 function quick(team,d){S[team].score=Math.max(0,S[team].score+d);commit();}
 function minus(team){
@@ -405,7 +415,7 @@ function removeEvent(id){
 }
 function replayEvent(id){
   const e=S.events.find(x=>x.id===id);if(!e)return;
-  commit({id:uid(),ts:Date.now(),type:'replay',team:e.team,player:e.player,kind:e.kind,minute:e.minute});
+  commit({id:uid(),ts:Date.now(),type:'replay',team:e.team,player:e.player,kind:e.kind,minute:e.minute,eid:e.id});
 }
 
 /* ===== Події ===== */
@@ -459,7 +469,7 @@ function renderUI(){
   document.querySelectorAll('.th').forEach(el=>el.classList.toggle('on',el.dataset.theme===S.theme));
   $('btnStart').classList.toggle('act',!S.clock.running);$('btnPause').classList.toggle('act',S.clock.running);
   $('clockPer').textContent=PERIODS[S.clock.period]||'';
-  document.querySelectorAll('[data-val]').forEach(el=>{const v=getP(S,el.dataset.val);el.textContent=el.dataset.val==='ui.scale'?(+v).toFixed(2)+'×':v+' px';});
+  document.querySelectorAll('[data-val]').forEach(el=>{const v=getP(S,el.dataset.val);const k=el.dataset.val;el.textContent=k==='ui.scale'?(+v).toFixed(2)+'×':(k==='ui.autoDur'||k==='ui.goalDelay')?v+' с':v+' px';});
   // список голів
   const list=$('evlist');list.innerHTML='';
   const goals=S.events.filter(e=>e.type==='goal');
@@ -514,7 +524,7 @@ async function initialPull(){
   if(!cfg.db){setStatus('local','локально (без Firebase)');return;}
   try{
     const r=await fetch(dbUrl());if(!r.ok)throw 0;const remote=await r.json();
-    if(remote&&(remote.rev||0)>(S.rev||0)){S=merge(DEF,remote);syncInputs();}
+    if(remote&&(remote.rev||0)>(S.rev||0)){S=merge(DEF,remote);migrate();syncInputs();}
     setStatus('ok','Firebase · '+cfg.court);
   }catch(e){setStatus('err','немає зв\'язку з Firebase');}
 }
