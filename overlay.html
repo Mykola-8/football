@@ -158,9 +158,15 @@ body.bg-black{background:#000}
 .wplate.fresh{animation:wup .7s both cubic-bezier(.2,1.2,.3,1)}
 @keyframes wup{from{opacity:0;transform:translateY(28px) scale(.9)}to{opacity:1;transform:none}}
 #stage[data-style="pill"] .wbar{border-radius:46px}
-#stage[data-board="wide"][data-pos^="b"] #lower{bottom:190px}
-#stage[data-board="wide"][data-pos^="b"] #side{bottom:340px}
-#stage[data-board="wide"][data-pos^="b"] .goalwrap{bottom:320px}
+#stage.wide-on #lower{bottom:190px}
+#stage.wide-on #side{bottom:340px}
+#stage.wide-on .goalwrap{bottom:320px}
+.wico{font-size:30px;line-height:1;flex:none}
+.wcard{width:22px;height:30px;border-radius:4px;flex:none;position:relative;box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.5)}
+.wcard.y{background:linear-gradient(135deg,#ffe95a,#e8b800)}
+.wcard.r{background:linear-gradient(135deg,#ff5a5a,#c20000)}
+.wcard.yy{background:linear-gradient(135deg,#ffe95a,#e8b800)}
+.wcard.yy::after{content:"";position:absolute;left:6px;top:5px;right:-6px;bottom:-5px;border-radius:4px;background:linear-gradient(135deg,#ff5a5a,#c20000);z-index:-1}
 
 /* ================= ГОЛ ================= */
 #fxlayer{position:absolute;inset:0;pointer-events:none;z-index:30;overflow:hidden}
@@ -188,7 +194,7 @@ body.bg-black{background:#000}
 @keyframes fall{to{transform:translateY(1200px) translateX(var(--dx)) rotate(900deg)}}
 
 /* ================= БОКОВІ ПЛАШКИ (картка/заміна) ================= */
-#side{position:absolute;left:50px;bottom:220px;display:flex;flex-direction:column-reverse;gap:12px;z-index:20}
+#side{position:absolute;left:50px;bottom:220px;display:flex;flex-direction:column-reverse;gap:12px;z-index:20;transition:bottom .5s ease}
 .plate{display:flex;align-items:center;gap:16px;min-width:420px;height:92px;padding-right:30px;animation:pin .7s both cubic-bezier(.2,1.2,.3,1)}
 .plate.out{animation:pout .5s forwards cubic-bezier(.6,0,.9,.5)}
 @keyframes pin{from{transform:translateX(-130%);opacity:0}to{transform:none;opacity:1}}
@@ -210,7 +216,7 @@ body.bg-black{background:#000}
 .arrow{font-size:26px}
 
 /* ================= НИЖНЯ ПЛАШКА ================= */
-#lower{position:absolute;left:50px;bottom:70px;z-index:20;clip-path:inset(0 100% 0 0);transition:clip-path .8s cubic-bezier(.2,.9,.3,1)}
+#lower{position:absolute;left:50px;bottom:70px;z-index:20;clip-path:inset(0 100% 0 0);transition:clip-path .8s cubic-bezier(.2,.9,.3,1),bottom .5s ease}
 #lower.on{clip-path:inset(-20px -40px -40px -20px)}
 #lower .lp{display:flex;align-items:stretch;min-width:560px;max-width:1300px;padding-right:40px}
 #lower .bar{width:18px;flex:none;background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
@@ -299,12 +305,12 @@ const PERIODS={pre:'ПЕРЕД МАТЧЕМ',p1:'1 ТАЙМ',ht:'ПЕРЕРВА'
 const LIM={p1:45,p2:90,et1:105,et2:120};
 const LOGO_DEF=Object.fromEntries(Array.from({length:10},(_,i)=>['l'+(i+1),{on:false,rev:0,name:'',x:0,y:0,size:220}]));
 const DEF={
-  home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logo:'',score:0},
-  away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logo:'',score:0},
+  home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logoRev:0,score:0},
+  away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logoRev:0,score:0},
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'bc',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,style:'classic',x:0,y:0,board:'wide',auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblem:''},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:''},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   logos:LOGO_DEF,
@@ -366,13 +372,13 @@ function render(){
   stage.dataset.theme=S.theme;
   stage.style.setProperty('--rel',S.ui.rel);
   const wrap=$('bugwrap'),bug=$('bug');
-  wrap.className='pos-'+S.ui.pos;$('bugzoom').style.zoom=S.ui.scale;wrap.style.setProperty('--ox',S.ui.x||0);wrap.style.setProperty('--oy',S.ui.y||0);stage.dataset.style=S.ui.style||'classic';stage.dataset.board=S.ui.board;stage.dataset.pos=S.ui.pos;
-  const ww=$('widewrap');ww.className='pos-'+S.ui.pos;$('widezoom').style.zoom=S.ui.scale;ww.style.setProperty('--ox',S.ui.x||0);ww.style.setProperty('--oy',S.ui.y||0);
+  wrap.className='pos-'+S.ui.pos;$('bugzoom').style.zoom=S.ui.scale;wrap.style.setProperty('--ox',S.ui.x||0);wrap.style.setProperty('--oy',S.ui.y||0);stage.dataset.style=S.ui.style||'classic';
+  const ww=$('widewrap');ww.className='pos-bc';$('widezoom').style.zoom=S.ui.wScale||1;ww.style.setProperty('--ox',S.ui.wX||0);ww.style.setProperty('--oy',S.ui.wY||0);
   bug.classList.remove('anim-slide','anim-drop','anim-zoom');bug.classList.add('anim-'+S.ui.anim);
   // назви/кольори
   $('bHomeName').textContent=nameOf(S.home);$('bAwayName').textContent=nameOf(S.away);
   setKit($('bHome'),S.home);setKit($('bAway'),S.away);
-  setLogo($('bHomeLogo'),S.home.logo);setLogo($('bAwayLogo'),S.away.logo);
+  setTeamLogo($('bHomeLogo'),S.home);setTeamLogo($('bAwayLogo'),S.away);
   $('bPeriod').textContent=PERIODS[S.clock.period]||'';
   $('bPeriod').style.display=PERIODS[S.clock.period]?'':'none';
   document.querySelector('.clockcap').style.display=S.clock.show?'':'none';
@@ -381,10 +387,8 @@ function render(){
   // додатковий час
   const st=$('bStop');st.textContent='+'+S.added.val;st.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
   // показ/ховання табло
-  const vis=(S.ui.bug||sessionOn)&&!(S.big.show&&S.ui.hideBugOnBig);
-  const isWide=S.ui.board==='wide';
-  const wantBug=vis&&!isWide;
-  renderWide(vis&&isWide,isWide);
+  const wantBug=!!S.ui.bug&&!(S.big.show&&S.ui.hideBugOnBig)&&!(S.ui.hideSmallOnWide&&sessionOn);
+  renderWide(sessionOn);
   if(wantBug&&!bugShown){bug.classList.remove('hidden');bug.classList.add('intro');setTimeout(()=>bug.classList.remove('intro'),1600);}
   if(!wantBug&&bugShown)bug.classList.add('hidden');
   bugShown=wantBug;if(!initialized&&!wantBug)bug.classList.add('hidden');
@@ -393,7 +397,7 @@ function render(){
   $('bgTitle').textContent=S.big.title||PERIODS[S.clock.period]||'';
   $('bgHomeName').textContent=S.home.name;$('bgAwayName').textContent=S.away.name;
   setKit($('bgHome'),S.home);setKit($('bgAway'),S.away);
-  setLogo($('bgHomeLogo'),S.home.logo);setLogo($('bgAwayLogo'),S.away.logo);
+  setTeamLogo($('bgHomeLogo'),S.home);setTeamLogo($('bgAwayLogo'),S.away);
   $('bgHS').firstChild.textContent=S.home.score;$('bgAS').firstChild.textContent=S.away.score;
   fillScorers($('bgHL'),'home');fillScorers($('bgAL'),'away');
   big.classList.toggle('hidden',!S.big.show);
@@ -454,37 +458,45 @@ function freshPlate(eid){
   const li=document.querySelector('#wscorers li[data-id="'+eid+'"]');
   if(li){li.classList.remove('fresh');void li.offsetWidth;li.classList.add('fresh');}
 }
+function setImg(img,key,rev){
+  rev=rev||0;
+  if(!rev){img.removeAttribute('src');img.dataset.rev='';return;}
+  if(img.dataset.rev===String(rev))return;
+  img.dataset.rev=String(rev);img.removeAttribute('src');
+  getLogoData(key,rev).then(d=>{if(img.dataset.rev!==String(rev))return;if(d)img.src=d;else img.dataset.rev='';});
+}
+function setTeamLogo(img,t){setImg(img,'t'+t.logoRev,t.logoRev);}
 function setCrest(id,t){
   const b=$(id);b.style.setProperty('--k1',t.c1);b.style.setProperty('--k2',t.c2);
   const img=b.querySelector('img'),sp=b.querySelector('.wshort');
-  setLogo(img,t.logo);sp.textContent=t.short||'';sp.style.display=t.logo?'none':'';
+  setTeamLogo(img,t);sp.textContent=t.short||'';sp.style.display=t.logoRev?'none':'';
 }
 function renderPlates(){
-  const goals=(S.events||[]).filter(e=>e.type==='goal');
-  const sig=goals.map(e=>[e.id,e.team,e.player,e.minute,e.kind].join(':')).join('|')+S.home.c1+S.away.c1;
+  const evs=(S.events||[]).filter(e=>e.type==='goal'||e.type==='card');
+  const sig=evs.map(e=>[e.id,e.team,e.type,e.card,e.player,e.minute,e.kind].join(':')).join('|')+S.home.c1+S.away.c1;
   if(sig===lastPlateSig)return;lastPlateSig=sig;
   [['home','wsH'],['away','wsA']].forEach(([team,id])=>{
     const ul=$(id);ul.innerHTML='';
-    goals.filter(e=>e.team===team).slice(-6).forEach(e=>{
+    evs.filter(e=>e.team===team).slice(-6).forEach(e=>{
       const li=document.createElement('li');li.className='wplate relief emb';li.dataset.id=e.id;li.style.setProperty('--k1',S[team].c1);
-      const tag=e.kind==='pen'?' (п)':e.kind==='og'?' (а/г)':'';
-      li.innerHTML='<i class="wk"></i><b>'+esc(e.player||'Гол')+'</b><span class="wm">'+esc(e.minute)+'′'+tag+'</span>';
+      const tag=e.type==='goal'?(e.kind==='pen'?' (п)':e.kind==='og'?' (а/г)':''):'';
+      const ico=e.type==='card'?'<i class="wcard '+(e.card==='r'?'r':e.card==='yy'?'yy':'y')+'"></i>':'<span class="wico">⚽</span>';
+      li.innerHTML='<i class="wk"></i>'+ico+'<b>'+esc(e.player||(e.type==='card'?'Картка':'Гол'))+'</b><span class="wm">'+esc(e.minute)+'′'+tag+'</span>';
       ul.appendChild(li);
     });
   });
 }
-function renderWide(show,isWide){
-  if(isWide){
-    $('wnH').textContent=nameOf(S.home);$('wnA').textContent=nameOf(S.away);
-    setCrest('wcH',S.home);setCrest('wcA',S.away);
-    $('wsHs').textContent=S.home.score;$('wsAs').textContent=S.away.score;
-    setLogo($('wEmb'),S.ui.emblem);$('wDash').style.display=S.ui.emblem?'none':'';
-    $('wTab').style.display=S.clock.show?'':'none';
-    const st=$('wStop');st.textContent='+'+S.added.val;st.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
-    renderPlates();
-  }
+function renderWide(show){
+  $('wnH').textContent=nameOf(S.home);$('wnA').textContent=nameOf(S.away);
+  setCrest('wcH',S.home);setCrest('wcA',S.away);
+  $('wsHs').textContent=S.home.score;$('wsAs').textContent=S.away.score;
+  setImg($('wEmb'),'e'+S.ui.emblemRev,S.ui.emblemRev);$('wDash').style.display=S.ui.emblemRev?'none':'';
+  $('wTab').style.display=S.clock.show?'':'none';
+  const st=$('wStop');st.textContent='+'+S.added.val;st.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
+  renderPlates();
   $('wide').classList.toggle('hidden',!show);
-  $('wscorers').classList.toggle('on',!!(show&&sessionOn));
+  $('wscorers').classList.toggle('on',!!show);
+  stage.classList.toggle('wide-on',!!show);
 }
 
 /* ===== Логотипи (до 10) ===== */
@@ -505,7 +517,7 @@ function renderLogos(){
     if(!l.rev){el.removeAttribute('src');el.dataset.rev='';}
     else if(el.dataset.rev!==String(l.rev)){
       el.dataset.rev=String(l.rev);el.removeAttribute('src');
-      getLogoData(k,l.rev).then(d=>{if(d&&el.dataset.rev===String(S.logos[k].rev)){el.src=d;el.classList.toggle('on',!!S.logos[k].on);}});
+      getLogoData(k,l.rev).then(d=>{if(el.dataset.rev!==String(S.logos[k].rev))return;if(d){el.src=d;el.classList.toggle('on',!!S.logos[k].on);}else el.dataset.rev='';});
     }
     el.classList.toggle('on',!!(l.on&&l.rev&&el.getAttribute('src')));
   }
@@ -515,13 +527,13 @@ function renderLogos(){
 function teamOf(k){return S[k]||S.home;}
 function playFx(fx){
   if(fx.type==='goal'||fx.type==='replay'){
-    if(S.ui.goalBanner)goalFx(fx);
+    if(S.ui.goalBanner&&fx.what!=='card')goalFx(fx);
     if(S.ui.auto||fx.type==='replay'){
       const d=fx.type==='replay'?0:Math.max(0,(S.ui.goalDelay==null?3:S.ui.goalDelay))*1000;
-      setTimeout(()=>startSession(fx.eid,fx.team),d);
+      setTimeout(()=>startSession(fx.eid,fx.what==='card'?null:fx.team),d);
     }
   }
-  else if(fx.type==='card')cardFx(fx);
+  else if(fx.type==='card'){cardFx(Object.assign({},fx,{dur:3}));if(S.ui.auto)setTimeout(()=>startSession(fx.eid,null),600);}
   else if(fx.type==='sub')subFx(fx);
   else if(fx.type==='bar')setTimeout(()=>startSession(null,null),0);
 }
