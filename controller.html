@@ -1,325 +1,524 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Padel Controller Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { background-color: #121212; font-family: 'Montserrat', sans-serif; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; gap: 12px; -webkit-tap-highlight-color: transparent; }
-        h2 { margin: 5px 0; font-size: 14px; text-align: center; color: #c69f66; letter-spacing: 1px; text-transform: uppercase; }
-        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; }
-        .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; }
-        .row:last-child { margin-bottom: 0; }
-        input[type="text"], input[type="number"] { flex: 1; background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; font-family: inherit; font-size: 14px; }
-        .btn { background: #333; color: white; border: none; padding: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.15s; }
-        .btn:active { transform: scale(0.97); }
-        .btn-gold { background: linear-gradient(to bottom, #c69f66, #9c7a4b); color: white; }
-        .btn-green { background: #15803d; }
-        .btn-blue { background: #1d4ed8; }
-        .btn-red { background: #b91c1c; }
-        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .score-btn { height: 110px; border: none; border-radius: 12px; color: white; font-weight: 800; font-size: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .score-btn span { font-size: 34px; font-weight: 900; }
-        .serve-box { display: flex; gap: 10px; width: 100%; }
-        .serve-btn { flex: 1; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: #888; border-radius: 6px; font-weight: 700; text-transform: uppercase; font-size: 11px; }
-        .serve-btn.active { background: #b28a55; color: white; border-color: #b28a55; }
-        .status-badge { background: #2a2a2a; color: #c69f66; padding: 6px 10px; font-size: 12px; border-radius: 4px; font-weight: 700; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .switch-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Football Controller</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0e1218;color:#e6ebf2;font:15px/1.35 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#151b24;border-bottom:1px solid #243041;position:sticky;top:0;z-index:50}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:#9db0c6}
+.dot{width:10px;height:10px;border-radius:50%;background:#667}
+.dot.ok{background:#3ddc84}.dot.err{background:#ff5252}.dot.local{background:#ffb300}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:14px;padding:14px;max-width:1500px;margin:auto}
+.main{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;align-content:start}
+.side{position:sticky;top:62px;align-self:start;display:flex;flex-direction:column;gap:14px}
+.card{background:#171e29;border:1px solid #243041;border-radius:12px;padding:14px}
+.card.wide{grid-column:1/-1}
+.card h2{font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#7f94ad;margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.grow{flex:1;min-width:0}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:11px;color:#8ba0b9;letter-spacing:.8px;text-transform:uppercase;flex:1;min-width:90px}
+input[type=text],input[type=url],select{background:#0e1218;border:1px solid #2b3a4f;color:#e6ebf2;border-radius:8px;padding:9px 10px;font:inherit;width:100%;min-width:0}
+input[type=text]:focus,input[type=url]:focus,select:focus{outline:2px solid #3b82f6;border-color:transparent}
+input[type=color]{width:100%;height:38px;border:1px solid #2b3a4f;border-radius:8px;background:#0e1218;padding:2px;cursor:pointer}
+input[type=range]{width:100%}
+button{font:inherit;font-weight:600;color:#e6ebf2;background:#243246;border:1px solid #324560;border-radius:9px;padding:10px 14px;cursor:pointer;transition:transform .06s,background .15s,filter .15s;user-select:none}
+button:hover{background:#2d4059}
+button:active{transform:scale(.96)}
+button.on{background:#1f7a4d;border-color:#2fb374;color:#fff}
+button.act{background:#2563eb;border-color:#4a86ff;color:#fff}
+button.danger{background:#7a1f2b;border-color:#b53a4b}
+button.sm{padding:6px 10px;font-size:13px}
+button.big{padding:16px 18px;font-size:18px}
+.goalbtn{background:var(--tc,#2563eb);border-color:transparent;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);font-size:20px;padding:16px 10px;flex:1;letter-spacing:1px}
+.goalbtn:hover{filter:brightness(1.15);background:var(--tc,#2563eb)}
+.teams2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tbox{background:#0f151d;border:1px solid #243041;border-radius:10px;padding:10px;border-top:4px solid var(--tc,#444)}
+.tbox .tn{font-weight:700;font-size:14px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scoreNum{font-size:64px;font-weight:800;text-align:center;line-height:1;margin:6px 0 10px;font-variant-numeric:tabular-nums}
+.clockDisp{font-size:62px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:2px;margin-bottom:6px}
+.clockPer{text-align:center;color:#8ba0b9;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.btns.c4{grid-template-columns:repeat(4,1fr)}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.th{height:62px;border-radius:9px;border:2px solid transparent;position:relative;overflow:hidden;padding:0;font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px}
+.th.on{border-color:#fff;box-shadow:0 0 0 2px #2563eb}
+.th::before{content:"";position:absolute;left:0;right:0;top:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0))}
+.th i{position:absolute;right:6px;top:6px;width:30px;height:12px;border-radius:3px}
+.pv{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:10px;border:1px solid #243041}
+.pv.checker{background:repeating-conic-gradient(#3a3f47 0% 25%,#2b2f36 0% 50%) 0 0/24px 24px}
+.pv.grass{background:linear-gradient(180deg,#2e7d32,#1b5e20)}
+.pv.black{background:#000}
+.pv iframe{position:absolute;left:0;top:0;width:1920px;height:1080px;border:0;transform-origin:0 0;background:transparent}
+.evrow{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;background:#0f151d;margin-bottom:6px;font-size:14px}
+.evrow .m{font-weight:700;min-width:46px;color:#9db0c6}
+.evrow .t{width:10px;height:10px;border-radius:50%;flex:none}
+.hint{font-size:12px;color:#6f8399;margin-top:8px}
+.kbd{display:inline-block;background:#243246;border-radius:5px;padding:1px 6px;font-size:12px;font-weight:700;margin:0 2px}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{position:static;order:-1}.main{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+<header>
+  <h1>⚽ ФУТБОЛ · ПУЛЬТ ТРАНСЛЯЦІЇ</h1>
+  <div class="status"><span class="dot" id="dot"></span><span id="stxt">локально</span></div>
+</header>
 
-    <h2>Пульт Padel (Firebase Web App)</h2>
+<div class="layout">
+<div class="main">
 
-    <div class="card">
-        <div class="row" style="gap:10px;">
-            <input type="text" id="p1-name-input" placeholder="Команда 1">
-            <input type="text" id="p2-name-input" placeholder="Команда 2">
-        </div>
-        <button class="btn btn-gold" style="width:100%" onclick="updateNames()">Оновити назви</button>
-    </div>
-
-    <div class="card">
-        <div class="switch-row">
-            <span style="font-size:13px; font-weight:700;">Режим Американо:</span>
-            <input type="checkbox" id="mode-americano-checkbox" style="width:20px; height:20px; accent-color:#b28a55;" onchange="toggleAmericanoMode(this.checked)">
-        </div>
-        <div class="row" id="americano-limit-row" style="margin-top:10px; display:none;">
-            <span style="font-size:12px; color:#aaa;">Ліміт очок (1-30):</span>
-            <input type="number" id="s-americano-limit" min="1" max="30" value="16" style="width:70px; padding:6px; text-align:center;" onchange="updateAmericanoLimit(this.value)">
-        </div>
-    </div>
-
-    <div class="status-badge" id="mode-status">Завантаження стану...</div>
-
-    <div class="score-grid">
-        <button class="score-btn btn-green" onclick="scorePoint(1)">
-            <small id="lbl-p1">Команда 1</small>
-            <span id="view-p1-pts">0</span>
-        </button>
-        <button class="score-btn btn-blue" onclick="scorePoint(2)">
-            <small id="lbl-p2">Команда 2</small>
-            <span id="view-p2-pts">0</span>
-        </button>
-    </div>
-
-    <div class="card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Масштаб табла (OBS):</div>
+  <!-- РАХУНОК -->
+  <div class="card wide">
+    <h2>Рахунок і голи</h2>
+    <div class="teams2">
+      <div class="tbox" id="tbox_home">
+        <div class="tn" data-bind="home.name"></div>
+        <div class="scoreNum" id="sc_home">0</div>
         <div class="row">
-            <input type="range" id="scale-slider" min="0.5" max="1.5" step="0.05" value="1" style="flex:1; accent-color:#b28a55;" oninput="updateScale(this.value)">
-            <span id="scale-factor-display" style="font-size:14px; font-weight:700; min-width:45px; text-align:right; color:#c69f66;">1.00x</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:4px; color:#aaa; text-transform: uppercase;">Подача:</div>
-        <div class="serve-box">
-            <button class="serve-btn" id="srv-btn-1" onclick="setServer(1)">Подає К1 🎾</button>
-            <button class="serve-btn" id="srv-btn-2" onclick="setServer(2)">Подає К2 🎾</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Керування Логотипом:</div>
-        <div class="row">
-            <button class="btn" id="logo-visibility-btn" style="flex:1; background:#b28a55;" onclick="toggleLogoVisibility()">Сховати логотип</button>
-            <button class="btn btn-red" onclick="clearLogo()">Скинути лого</button>
-        </div>
-        <label class="btn btn-gold" style="display: block; text-align: center; margin-top: 8px;">
-            📁 Вибрати файл Логотипу
-            <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(event)">
-        </label>
-    </div>
-
-    <div class="card" id="manual-sets-card">
-        <div style="font-size:11px; font-weight:700; margin-bottom:8px; color:#aaa; text-transform: uppercase;">Коригування 5 сетів вручну:</div>
-        <div class="row" style="gap:4px;">
-            <span style="font-size:11px; width:60px;">К1 (1-5):</span>
-            <input type="number" id="m-t1-s1" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t1-s2" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t1-s3" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t1-s4" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t1-s5" style="padding:4px; text-align:center;">
-        </div>
-        <div class="row" style="gap:4px; margin-bottom:10px;">
-            <span style="font-size:11px; width:60px;">К2 (1-5):</span>
-            <input type="number" id="m-t2-s1" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t2-s2" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t2-s3" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t2-s4" style="padding:4px; text-align:center;">
-            <input type="number" id="m-t2-s5" style="padding:4px; text-align:center;">
+          <input type="text" id="pl_home" placeholder="Гравець (для плашки голу)">
         </div>
         <div class="row">
-            <span style="font-size:12px;">Активний сет (1-5):</span>
-            <input type="number" id="m-cur-set" min="1" max="5" style="width:50px; padding:4px; text-align:center;">
+          <select id="kind_home"><option value="">Гол</option><option value="pen">Пенальті</option><option value="og">Автогол</option></select>
         </div>
-        <button class="btn" style="width:100%; background:#444; margin-top:5px;" onclick="updateSetsManual()">Зберегти зміни сетів</button>
+        <div class="row"><button class="goalbtn" id="gb_home" onclick="goal('home')">⚽ ГОЛ</button></div>
+        <div class="row"><button class="sm grow" onclick="quick('home',1)">+1 тихо</button><button class="sm grow" onclick="minus('home')">−1 / скасувати</button></div>
+      </div>
+      <div class="tbox" id="tbox_away">
+        <div class="tn" data-bind="away.name"></div>
+        <div class="scoreNum" id="sc_away">0</div>
+        <div class="row">
+          <input type="text" id="pl_away" placeholder="Гравець (для плашки голу)">
+        </div>
+        <div class="row">
+          <select id="kind_away"><option value="">Гол</option><option value="pen">Пенальті</option><option value="og">Автогол</option></select>
+        </div>
+        <div class="row"><button class="goalbtn" id="gb_away" onclick="goal('away')">⚽ ГОЛ</button></div>
+        <div class="row"><button class="sm grow" onclick="quick('away',1)">+1 тихо</button><button class="sm grow" onclick="minus('away')">−1 / скасувати</button></div>
+      </div>
     </div>
+    <div class="hint">Гарячі клавіші: <span class="kbd">1</span> гол господарів, <span class="kbd">2</span> гол гостей, <span class="kbd">Пробіл</span> старт/пауза, <span class="kbd">B</span> табло, <span class="kbd">N</span> велике табло.</div>
+  </div>
 
+  <!-- ГОДИННИК -->
+  <div class="card">
+    <h2>Годинник</h2>
+    <div class="clockDisp" id="clockDisp">00:00</div>
+    <div class="clockPer" id="clockPer"></div>
+    <div class="btns" style="margin-bottom:10px">
+      <button class="big act" id="btnStart" onclick="startClock()">▶ Старт</button>
+      <button class="big" id="btnPause" onclick="pauseClock()">⏸ Пауза</button>
+    </div>
+    <div class="btns c4" style="margin-bottom:10px">
+      <button class="sm" onclick="adj(-60)">−1 хв</button><button class="sm" onclick="adj(-1)">−1 с</button>
+      <button class="sm" onclick="adj(1)">+1 с</button><button class="sm" onclick="adj(60)">+1 хв</button>
+    </div>
     <div class="row">
-        <button class="btn btn-red" style="flex:1" onclick="resetMatch()">Скинути матч</button>
+      <input type="text" id="setT" placeholder="мм:сс" style="width:110px;flex:none">
+      <button class="sm" onclick="setExact()">Встановити час</button>
     </div>
+    <div class="row" style="margin-top:10px"><label class="f">Формат у табло
+      <select data-path="clock.fmt"><option value="plus">45+2 після кінця тайму</option><option value="mmss">47:12 (без зупинки)</option></select></label></div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  <!-- ПЕРІОД / ДОДАТКОВИЙ ЧАС -->
+  <div class="card">
+    <h2>Період матчу</h2>
+    <div class="btns" id="periodBtns">
+      <button data-period="pre">Перед матчем</button><button data-period="p1">1 тайм · 0:00</button>
+      <button data-period="ht">Перерва</button><button data-period="p2">2 тайм · 45:00</button>
+      <button data-period="et1">Дод. час 1 · 90:00</button><button data-period="et2">Дод. час 2 · 105:00</button>
+      <button data-period="pens">Пенальті</button><button data-period="ft">Кінець матчу</button>
+    </div>
+    <h2 style="margin-top:16px">Додатковий час</h2>
+    <div class="btns c4" id="addBtns">
+      <button data-add="1">+1</button><button data-add="2">+2</button><button data-add="3">+3</button><button data-add="4">+4</button>
+      <button data-add="5">+5</button><button data-add="6">+6</button><button data-add="7">+7</button><button data-add="8">+8</button>
+    </div>
+    <div class="row" style="margin-top:8px"><button class="sm" onclick="addHide()">Сховати плашку</button></div>
+  </div>
 
-        // Оновлений Firebase Config згідно з твоїм запитом
-        const firebaseConfig = {
-            apiKey: "AIzaSyDKOG6SqtMdktckIlXHKWoPZKOwME0yr1M",
-            authDomain: "padel-2-gurskyj.firebaseapp.com",
-            databaseURL: "https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "padel-2-gurskyj",
-            storageBucket: "padel-2-gurskyj.firebasestorage.app",
-            messagingSenderId: "671715970020",
-            appId: "1:671715970020:web:d95bd60210ebcba6a915f1",
-            measurementId: "G-3NLYX413C9"
-        };
+  <!-- ТАБЛО -->
+  <div class="card">
+    <h2>Що показувати</h2>
+    <div class="btns" style="margin-bottom:10px">
+      <button class="big" data-toggle="ui.bug" onclick="tog('ui.bug')">Табло рахунку</button>
+      <button class="big" data-toggle="big.show" onclick="tog('big.show')">Велике табло</button>
+    </div>
+    <div class="row">
+      <label class="f">Заголовок великого табло
+        <input type="text" data-path="big.title" placeholder="авто (за періодом)"></label>
+    </div>
+    <div class="row">
+      <button class="sm" onclick="setBigTitle('')">Авто</button><button class="sm" onclick="setBigTitle('ПЕРЕРВА')">Перерва</button>
+      <button class="sm" onclick="setBigTitle('ФІНАЛ')">Фінал</button><button class="sm" onclick="setBigTitle('РАХУНОК')">Рахунок</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="sm" data-toggle="clock.show" onclick="tog('clock.show')">Годинник у табло</button>
+      <button class="sm" data-toggle="ui.hideBugOnBig" onclick="tog('ui.hideBugOnBig')">Ховати табло при великому</button>
+    </div>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const analytics = getAnalytics(app);
-        const matchRef = ref(db, "padel/match_state");
+  <div class="card">
+    <h2>Вигляд табло</h2>
+    <div class="row">
+      <label class="f">Позиція<select data-path="ui.pos"><option value="tl">Зверху зліва</option><option value="tc">Зверху по центру</option><option value="tr">Зверху справа</option><option value="bl">Знизу зліва</option><option value="bc">Знизу по центру</option></select></label>
+      <label class="f">Поява<select data-path="ui.anim"><option value="slide">Виїзд збоку</option><option value="drop">Падіння</option><option value="zoom">Збільшення</option></select></label>
+    </div>
+    <div class="row">
+      <label class="f">Назви команд<select data-path="ui.names"><option value="full">Повні</option><option value="short">Скорочені</option></select></label>
+    </div>
+    <div class="row"><label class="f">Розмір табло <input type="range" min="0.5" max="1.6" step="0.05" data-path="ui.scale" data-num="1"></label></div>
+    <div class="row"><label class="f">Рельєф (0 — плоско) <input type="range" min="0" max="1.6" step="0.1" data-path="ui.rel" data-num="1"></label></div>
+  </div>
 
-        const pointSequence = ['0', '15', '30', '40', 'AD'];
-        let state = {
-            p1name: "TELLO / ARCE", p2name: "GALAN / CHINGOTTO",
-            p1Index: 0, p2Index: 0, currentServer: 1, currentSet: 1, scale: 1,
-            isTiebreak: false, isAmericano: false, americanoLimit: 16, showLogo: true, logoSrc: "",
-            t1_s1: 0, t1_s2: 0, t1_s3: 0, t1_s4: 0, t1_s5: 0,
-            t2_s1: 0, t2_s2: 0, t2_s3: 0, t2_s4: 0, t2_s5: 0,
-            animation: { team: 0, type: "", ts: 0 }
-        };
+  <!-- ТЕМИ -->
+  <div class="card wide">
+    <h2>Тема кольорів</h2>
+    <div class="themes" id="themes"></div>
+  </div>
 
-        onValue(matchRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                state = data;
-                document.getElementById('lbl-p1').innerText = state.p1name;
-                document.getElementById('lbl-p2').innerText = state.p2name;
-                
-                document.getElementById('mode-americano-checkbox').checked = !!state.isAmericano;
-                document.getElementById('americano-limit-row').style.display = state.isAmericano ? 'flex' : 'none';
-                document.getElementById('manual-sets-card').style.display = state.isAmericano ? 'none' : 'block';
+  <!-- КОМАНДИ -->
+  <div class="card wide">
+    <h2>Команди</h2>
+    <div class="teams2">
+      <div class="tbox" id="tb2_home">
+        <div class="row"><label class="f">Назва<input type="text" data-path="home.name"></label></div>
+        <div class="row"><label class="f">Скорочено<input type="text" data-path="home.short" maxlength="5"></label>
+          <label class="f" style="max-width:90px">Колір 1<input type="color" data-path="home.c1"></label>
+          <label class="f" style="max-width:90px">Колір 2<input type="color" data-path="home.c2"></label></div>
+        <div class="row"><label class="f">Логотип (URL, необов'язково)<input type="url" data-path="home.logo" placeholder="https://..."></label></div>
+      </div>
+      <div class="tbox" id="tb2_away">
+        <div class="row"><label class="f">Назва<input type="text" data-path="away.name"></label></div>
+        <div class="row"><label class="f">Скорочено<input type="text" data-path="away.short" maxlength="5"></label>
+          <label class="f" style="max-width:90px">Колір 1<input type="color" data-path="away.c1"></label>
+          <label class="f" style="max-width:90px">Колір 2<input type="color" data-path="away.c2"></label></div>
+        <div class="row"><label class="f">Логотип (URL, необов'язково)<input type="url" data-path="away.logo" placeholder="https://..."></label></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="sm" onclick="swapTeams()">⇄ Поміняти команди місцями</button></div>
+  </div>
 
-                if (state.isAmericano) {
-                    document.getElementById('mode-status').innerText = `🔥 АМЕРИКАНО (ЛІМІТ: ${state.americanoLimit || 16})`;
-                    document.getElementById('view-p1-pts').innerText = state.p1Index;
-                    document.getElementById('view-p2-pts').innerText = state.p2Index;
-                } else if (state.isTiebreak) {
-                    document.getElementById('mode-status').innerText = "🔥 ТАЙБРЕЙК (ДО 7)";
-                    document.getElementById('view-p1-pts').innerText = state.p1Index;
-                    document.getElementById('view-p2-pts').innerText = state.p2Index;
-                } else {
-                    document.getElementById('mode-status').innerText = `Сет ${state.currentSet || 1} (Класичний матч)`;
-                    document.getElementById('view-p1-pts').innerText = state.p1Index === 4 ? "AD" : (state.p2Index === 4 ? "" : pointSequence[state.p1Index]);
-                    document.getElementById('view-p2-pts').innerText = state.p2Index === 4 ? "AD" : (state.p1Index === 4 ? "" : pointSequence[state.p2Index]);
-                }
-                
-                document.getElementById('srv-btn-1').classList.toggle('active', state.currentServer === 1);
-                document.getElementById('srv-btn-2').classList.toggle('active', state.currentServer === 2);
-                document.getElementById('logo-visibility-btn').innerText = state.showLogo ? "Сховати логотип" : "Показати логотип";
-                
-                const currentScale = state.scale || 1;
-                document.getElementById('scale-slider').value = currentScale;
-                document.getElementById('scale-factor-display').innerText = currentScale.toFixed(2) + "x";
+  <!-- КАРТКИ -->
+  <div class="card">
+    <h2>Картка</h2>
+    <div class="row">
+      <label class="f">Команда<select id="cd_team"><option value="home">Господарі</option><option value="away">Гості</option></select></label>
+      <label class="f">Картка<select id="cd_type"><option value="y">Жовта</option><option value="r">Червона</option><option value="yy">2-га жовта</option></select></label>
+    </div>
+    <div class="row"><input type="text" id="cd_pl" placeholder="№ Гравець (напр. 10 Мудрик)"></div>
+    <div class="row"><button class="big act grow" onclick="showCard()">Показати картку</button></div>
+  </div>
 
-                document.getElementById('m-t1-s1').value = state.t1_s1 || 0;
-                document.getElementById('m-t1-s2').value = state.t1_s2 || 0;
-                document.getElementById('m-t1-s3').value = state.t1_s3 || 0;
-                document.getElementById('m-t1-s4').value = state.t1_s4 || 0;
-                document.getElementById('m-t1-s5').value = state.t1_s5 || 0;
-                
-                document.getElementById('m-t2-s1').value = state.t2_s1 || 0;
-                document.getElementById('m-t2-s2').value = state.t2_s2 || 0;
-                document.getElementById('m-t2-s3').value = state.t2_s3 || 0;
-                document.getElementById('m-t2-s4').value = state.t2_s4 || 0;
-                document.getElementById('m-t2-s5').value = state.t2_s5 || 0;
-                
-                document.getElementById('m-cur-set').value = state.currentSet || 1;
-                document.getElementById('s-americano-limit').value = state.americanoLimit || 16;
-            }
-        });
+  <!-- ЗАМІНА -->
+  <div class="card">
+    <h2>Заміна</h2>
+    <div class="row">
+      <label class="f">Команда<select id="sb_team"><option value="home">Господарі</option><option value="away">Гості</option></select></label>
+    </div>
+    <div class="row"><input type="text" id="sb_in" placeholder="▲ Виходить (№ Гравець)"></div>
+    <div class="row"><input type="text" id="sb_out" placeholder="▼ Йде з поля (№ Гравець)"></div>
+    <div class="row"><button class="big act grow" onclick="showSub()">Показати заміну</button></div>
+  </div>
 
-        window.scorePoint = function(teamIndex) {
-            if (state.isAmericano) {
-                if (teamIndex === 1) state.p1Index++;
-                else state.p2Index++;
-                
-                let total = state.p1Index + state.p2Index;
-                let limit = parseInt(state.americanoLimit) || 16;
-                
-                if (state.p1Index >= limit || state.p2Index >= limit) {
-                    state.animation = { team: teamIndex, type: 'set', ts: Date.now() };
-                    alert("Матч Американо завершено!");
-                } else {
-                    if (total === 1 || (total > 1 && (total - 1) % 2 === 0)) {
-                        state.currentServer = state.currentServer === 1 ? 2 : 1;
-                    }
-                }
-            } else if (state.isTiebreak) {
-                if (teamIndex === 1) state.p1Index++;
-                else state.p2Index++;
-                
-                if (state.p1Index >= 7 && (state.p1Index - state.p2Index >= 2)) {
-                    winGame(1);
-                } else if (state.p2Index >= 7 && (state.p2Index - state.p1Index >= 2)) {
-                    winGame(2);
-                }
-            } else {
-                if (teamIndex === 1) {
-                    if (state.p1Index === 3 && state.p2Index === 3) state.p1Index = 4; 
-                    else if (state.p1Index === 3 && state.p2Index === 4) state.p2Index = 3; 
-                    else if (state.p1Index === 4) winGame(1); 
-                    else if (state.p1Index === 3 && state.p2Index < 3) winGame(1); 
-                    else state.p1Index++;
-                } else {
-                    if (state.p2Index === 3 && state.p1Index === 3) state.p2Index = 4; 
-                    else if (state.p2Index === 3 && state.p1Index === 4) state.p1Index = 3; 
-                    else if (state.p2Index === 4) winGame(2); 
-                    else if (state.p2Index === 3 && state.p1Index < 3) winGame(2); 
-                    else state.p2Index++;
-                }
-            }
-            set(matchRef, state);
-        }
+  <!-- НИЖНЯ ПЛАШКА -->
+  <div class="card">
+    <h2>Нижня плашка (текст)</h2>
+    <div class="row"><input type="text" data-path="lower.l1" placeholder="Головний рядок (напр. коментатор)"></div>
+    <div class="row"><input type="text" data-path="lower.l2" placeholder="Другий рядок (необов'язково)"></div>
+    <div class="row"><button class="big grow" data-toggle="lower.show" onclick="tog('lower.show')">Показати / сховати</button></div>
+  </div>
 
-        function winGame(winningTeam) {
-            state.p1Index = 0;
-            state.p2Index = 0;
-            state.isTiebreak = false;
-            
-            let cSet = state.currentSet || 1;
-            if (winningTeam === 1) state[`t1_s${cSet}`] = (state[`t1_s${cSet}`] || 0) + 1;
-            else state[`t2_s${cSet}`] = (state[`t2_s${cSet}`] || 0) + 1;
-            
-            let g1 = state[`t1_s${cSet}`];
-            let g2 = state[`t2_s${cSet}`];
-            
-            let isSetOver = false;
-            if ((g1 >= 6 && g1 - g2 >= 2) || g1 === 7) isSetOver = true;
-            else if ((g2 >= 6 && g2 - g1 >= 2) || g2 === 7) isSetOver = true;
-            else if (g1 === 6 && g2 === 6) state.isTiebreak = true;
-            
-            state.animation = {
-                team: winningTeam,
-                type: isSetOver ? 'set' : 'game',
-                ts: Date.now()
-            };
+  <!-- ПОДІЇ -->
+  <div class="card">
+    <h2>Список голів</h2>
+    <div id="evlist"></div>
+    <div class="hint">↻ — повторити анімацію голу. × — видалити гол і зняти 1 з рахунку.</div>
+  </div>
 
-            if (isSetOver) {
-                if (state.currentSet < 5) {
-                    state.currentSet++;
-                    state[`t1_s${state.currentSet}`] = 0;
-                    state[`t2_s${state.currentSet}`] = 0;
-                } else {
-                    alert("Матч завершено!");
-                }
-            }
-            state.currentServer = state.currentServer === 1 ? 2 : 1;
-        }
+  <!-- З'ЄДНАННЯ -->
+  <div class="card wide">
+    <h2>З'єднання та матч</h2>
+    <div class="row">
+      <label class="f" style="flex:3">Firebase Database URL<input type="url" id="cfgDb" placeholder="https://xxx-default-rtdb.europe-west1.firebasedatabase.app"></label>
+      <label class="f">Поле / ідентифікатор<input type="text" id="cfgCourt" placeholder="court_1"></label>
+    </div>
+    <div class="row">
+      <button class="act" onclick="saveCfg()">Підключити</button>
+      <button onclick="copyLink()">Скопіювати посилання оверлея</button>
+      <button class="danger" onclick="resetMatch()">Скинути матч</button>
+    </div>
+    <div class="hint">Дані пишуться у <b>/football/&lt;поле&gt;</b> (окремо від padel). Без Firebase пульт і оверлей синхронізуються лише в одному браузері (для перегляду). У PRISM/OBS додайте <b>overlay.html?db=…&amp;court=…</b> як Browser Source 1920×1080 — посилання копіюється кнопкою вище.</div>
+  </div>
 
-        window.toggleAmericanoMode = function(isChecked) {
-            state.isAmericano = isChecked; state.p1Index = 0; state.p2Index = 0; state.isTiebreak = false; set(matchRef, state);
-        };
-        window.updateAmericanoLimit = function(val) {
-            let parsed = parseInt(val) || 16; state.americanoLimit = Math.max(1, Math.min(30, parsed)); set(matchRef, state);
-        };
-        window.updateScale = function(val) {
-            state.scale = parseFloat(val); document.getElementById('scale-factor-display').innerText = state.scale.toFixed(2) + "x"; set(matchRef, state);
-        };
-        window.setServer = function(srv) { state.currentServer = srv; set(matchRef, state); }
-        window.updateNames = function() {
-            const p1n = document.getElementById('p1-name-input').value; const p2n = document.getElementById('p2-name-input').value;
-            if(p1n) state.p1name = p1n; if(p2n) state.p2name = p2n; set(matchRef, state);
-        }
-        window.toggleLogoVisibility = function() { state.showLogo = !state.showLogo; set(matchRef, state); }
-        window.uploadLogo = function(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader(); reader.onload = function(evt) { state.logoSrc = evt.target.result; set(matchRef, state); }; reader.readAsDataURL(file);
-        }
-        window.clearLogo = function() { state.logoSrc = ""; set(matchRef, state); }
-        window.updateSetsManual = function() {
-            for(let i=1; i<=5; i++) {
-                state[`t1_s${i}`] = parseInt(document.getElementById(`m-t1-s${i}`).value) || 0;
-                state[`t2_s${i}`] = parseInt(document.getElementById(`m-t2-s${i}`).value) || 0;
-            }
-            state.currentSet = parseInt(document.getElementById('m-cur-set').value) || 1; set(matchRef, state);
-        }
-        window.resetMatch = function() {
-            if(confirm("Скинути матч?")) {
-                set(matchRef, {
-                    p1name: "TELLO / ARCE", p2name: "GALAN / CHINGOTTO",
-                    p1Index: 0, p2Index: 0, currentServer: 1, currentSet: 1, scale: state.scale || 1,
-                    isTiebreak: false, isAmericano: false, americanoLimit: 16, showLogo: true, logoSrc: state.logoSrc || "",
-                    t1_s1: 0, t1_s2: 0, t1_s3: 0, t1_s4: 0, t1_s5: 0,
-                    t2_s1: 0, t2_s2: 0, t2_s3: 0, t2_s4: 0, t2_s5: 0,
-                    animation: { team: 0, type: "", ts: 0 }
-                });
-            }
-        }
-    </script>
+</div>
+
+<!-- ПРАВА КОЛОНКА: ПЕРЕГЛЯД -->
+<div class="side">
+  <div class="card">
+    <h2>Перегляд оверлея</h2>
+    <div class="pv checker" id="pvWrap"><iframe id="pv" title="preview"></iframe></div>
+    <div class="row" style="margin-top:10px">
+      <label class="f">Фон перегляду<select id="pvBg"><option value="checker">Шахівниця</option><option value="grass">Газон</option><option value="black">Чорний</option></select></label>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ===== Спільні константи (як в overlay.html) ===== */
+const PERIODS={pre:'Перед матчем',p1:'1 тайм',ht:'Перерва',p2:'2 тайм',et1:'Дод. час 1',et2:'Дод. час 2',pens:'Пенальті',ft:'Кінець матчу'};
+const LIM={p1:45,p2:90,et1:105,et2:120};
+const START={pre:0,p1:0,p2:45*60,et1:90*60,et2:105*60};
+const DEF={
+  home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logo:'',score:0},
+  away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logo:'',score:0},
+  clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
+  added:{show:false,val:0},
+  theme:'gold',
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:true,hideBugOnBig:true},
+  big:{show:false,title:''},
+  lower:{show:false,l1:'',l2:''},
+  events:[],fx:null,rev:0
+};
+const THEMES=[
+  ['gold','Золото','#4a3d1c','#120e05','#d4af37','#f9e28a'],
+  ['chrome','Хром','#f4f7fa','#7a8693','#ffffff','#2a3f55'],
+  ['neon','Неон','#123a86','#050f33','#3aa0ff','#2f86ff'],
+  ['carbon','Карбон','#3a3a3a','#080808','#8c8c8c','#ff4545'],
+  ['emerald','Смарагд','#146b4b','#03201a','#3ee08f','#46f0a0'],
+  ['pearl','Перламутр','#ffffff','#bfc3d2','#ffffff','#7a4cff'],
+  ['violet','Фіолет','#51168f','#12031f','#c58bff','#ff3aa3'],
+  ['sunset','Захід','#ff9a3c','#7d1608','#ffd08a','#2b1a3d']
+];
+function merge(d,s){
+  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.slice());
+  if(d&&typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&s[k]);return o;}
+  return (s===undefined||s===null)?d:s;
+}
+const $=id=>document.getElementById(id);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const getP=(o,p)=>p.split('.').reduce((a,k)=>a&&a[k],o);
+function setP(o,p,v){const ks=p.split('.');const l=ks.pop();const t=ks.reduce((a,k)=>a[k],o);t[l]=v;}
+
+/* ===== Конфіг і стан ===== */
+let cfg={db:'https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app',court:'court_1'};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfg')||'{}'));}catch(e){}
+let S=merge(DEF,{});
+try{const ls=localStorage.getItem('fb_state_'+cfg.court);if(ls)S=merge(DEF,JSON.parse(ls));}catch(e){}
+let bc=null;
+function openBC(){try{if(bc)bc.close();bc=new BroadcastChannel('fb_football_'+cfg.court);}catch(e){bc=null;}}
+openBC();
+
+/* ===== Відправка ===== */
+let sending=false,dirty=false;
+function setStatus(kind,txt){$('dot').className='dot '+kind;$('stxt').textContent=txt;}
+function dbUrl(){return (cfg.db||'').replace(/\/+$/,'')+'/football/'+cfg.court+'.json';}
+async function push(){
+  if(!cfg.db){setStatus('local','локально (без Firebase)');return;}
+  if(sending){dirty=true;return;}
+  sending=true;
+  do{dirty=false;
+    try{const r=await fetch(dbUrl(),{method:'PUT',body:JSON.stringify(S)});
+      if(r.ok)setStatus('ok','Firebase · '+cfg.court);else setStatus('err','Firebase помилка '+r.status+(r.status===401?' (правила БД)':''));
+    }catch(e){setStatus('err','немає зв\'язку з Firebase');}
+  }while(dirty);
+  sending=false;
+}
+function commit(fx){
+  if(fx)S.fx=fx;
+  S.rev=Date.now();
+  try{localStorage.setItem('fb_state_'+cfg.court,JSON.stringify(S));}catch(e){}
+  try{bc&&bc.postMessage(S);}catch(e){}
+  push();renderUI();
+}
+
+/* ===== Годинник ===== */
+function clockSec(){const c=S.clock;return Math.max(0,c.base+(c.running?(Date.now()-c.startedAt)/1000:0));}
+function fmtClock(sec,period,fmt){
+  sec=Math.floor(sec);const lim=LIM[period];
+  if(fmt==='plus'&&lim&&sec>=lim*60)return lim+'+'+(Math.floor((sec-lim*60)/60)+1);
+  return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+}
+function minuteLabel(sec,period){
+  const m=Math.floor(sec/60)+1;
+  const lim=LIM[period]||({ht:45}[period]);
+  return (lim&&m>lim)?lim+'+'+(m-lim):String(m);
+}
+function startClock(){if(S.clock.running)return;S.clock.startedAt=Date.now();S.clock.running=true;commit();}
+function pauseClock(){if(!S.clock.running)return;S.clock.base=clockSec();S.clock.running=false;commit();}
+function toggleClock(){S.clock.running?pauseClock():startClock();}
+function setClock(sec){S.clock.base=Math.max(0,sec);S.clock.startedAt=Date.now();commit();}
+function adj(d){setClock(clockSec()+d);}
+function setExact(){
+  const m=$('setT').value.trim().match(/^(\d{1,3})(?::(\d{1,2}))?$/);
+  if(!m)return;setClock(parseInt(m[1])*60+parseInt(m[2]||0));$('setT').value='';
+}
+function setPeriod(p){
+  S.clock.period=p;
+  if(p in START){S.clock.running=false;S.clock.base=START[p];}
+  else{S.clock.base=clockSec();S.clock.running=false;}
+  S.added.val=0;S.added.show=false;
+  commit();
+}
+function addSet(n){S.added.val=n;S.added.show=true;commit();}
+function addHide(){S.added.show=false;commit();}
+
+/* ===== Рахунок ===== */
+function goal(team){
+  const kind=$('kind_'+team).value;const player=$('pl_'+team).value.trim();
+  const sec=clockSec();const minute=minuteLabel(sec,S.clock.period);
+  S[team].score++;
+  S.events.push({id:uid(),team,type:'goal',player,kind,minute,sec:Math.floor(sec)});
+  $('pl_'+team).value='';$('kind_'+team).value='';
+  commit({id:uid(),ts:Date.now(),type:'goal',team,player,kind,minute});
+}
+function quick(team,d){S[team].score=Math.max(0,S[team].score+d);commit();}
+function minus(team){
+  const idx=S.events.map(e=>e.team===team&&e.type==='goal').lastIndexOf(true);
+  if(idx>=0)S.events.splice(idx,1);
+  S[team].score=Math.max(0,S[team].score-1);commit();
+}
+function removeEvent(id){
+  const i=S.events.findIndex(e=>e.id===id);if(i<0)return;
+  const e=S.events[i];S.events.splice(i,1);
+  if(e.type==='goal')S[e.team].score=Math.max(0,S[e.team].score-1);
+  commit();
+}
+function replayEvent(id){
+  const e=S.events.find(x=>x.id===id);if(!e)return;
+  commit({id:uid(),ts:Date.now(),type:'replay',team:e.team,player:e.player,kind:e.kind,minute:e.minute});
+}
+
+/* ===== Події ===== */
+function showCard(){
+  commit({id:uid(),ts:Date.now(),type:'card',team:$('cd_team').value,card:$('cd_type').value,player:$('cd_pl').value.trim()});
+}
+function showSub(){
+  commit({id:uid(),ts:Date.now(),type:'sub',team:$('sb_team').value,pin:$('sb_in').value.trim(),pout:$('sb_out').value.trim()});
+}
+
+/* ===== Команди / матч ===== */
+function swapTeams(){
+  const h=S.home;S.home=S.away;S.away=h;
+  S.events.forEach(e=>e.team=e.team==='home'?'away':'home');
+  syncInputs();commit();
+}
+function resetMatch(){
+  if(!confirm('Скинути рахунок, годинник і список голів? Назви команд і тема залишаться.'))return;
+  S.home.score=0;S.away.score=0;S.events=[];S.fx=null;
+  S.clock.running=false;S.clock.base=0;S.clock.period='p1';S.added={show:false,val:0};
+  S.big.show=false;S.lower.show=false;
+  commit();
+}
+function tog(p){setP(S,p,!getP(S,p));commit();}
+function setBigTitle(t){S.big.title=t;syncInputs();commit();}
+
+/* ===== Прив'язка полів ===== */
+function bindInputs(){
+  document.querySelectorAll('[data-path]').forEach(el=>{
+    const p=el.dataset.path;
+    const h=()=>{let v=el.value;if(el.dataset.num)v=parseFloat(v);setP(S,p,v);commit();};
+    el.addEventListener(el.tagName==='SELECT'?'change':'input',h);
+  });
+}
+function syncInputs(){
+  document.querySelectorAll('[data-path]').forEach(el=>{const v=getP(S,el.dataset.path);if(document.activeElement!==el)el.value=v;});
+}
+
+/* ===== Малювання UI ===== */
+function renderUI(){
+  $('sc_home').textContent=S.home.score;$('sc_away').textContent=S.away.score;
+  document.querySelectorAll('[data-bind]').forEach(el=>{el.textContent=getP(S,el.dataset.bind);});
+  ['home','away'].forEach(t=>{
+    ['tbox_'+t,'tb2_'+t,'gb_'+t].forEach(id=>$(id).style.setProperty('--tc',S[t].c1));
+  });
+  document.querySelectorAll('[data-toggle]').forEach(el=>el.classList.toggle('on',!!getP(S,el.dataset.toggle)));
+  document.querySelectorAll('[data-period]').forEach(el=>el.classList.toggle('act',el.dataset.period===S.clock.period));
+  document.querySelectorAll('[data-add]').forEach(el=>el.classList.toggle('act',S.added.show&&+el.dataset.add===S.added.val));
+  document.querySelectorAll('.th').forEach(el=>el.classList.toggle('on',el.dataset.theme===S.theme));
+  $('btnStart').classList.toggle('act',!S.clock.running);$('btnPause').classList.toggle('act',S.clock.running);
+  $('clockPer').textContent=PERIODS[S.clock.period]||'';
+  // список голів
+  const list=$('evlist');list.innerHTML='';
+  const goals=S.events.filter(e=>e.type==='goal');
+  if(!goals.length){list.innerHTML='<div class="hint" style="margin:0">Голів ще немає</div>';}
+  goals.forEach(e=>{
+    const t=S[e.team];const tag=e.kind==='pen'?' (п)':e.kind==='og'?' (а/г)':'';
+    const d=document.createElement('div');d.className='evrow';
+    d.innerHTML='<span class="t" style="background:'+t.c1+'"></span><span class="m">'+esc(e.minute)+'′</span><span class="grow">⚽ '+esc(e.player||'—')+tag+' · '+esc(t.short||t.name)+'</span>'+
+      '<button class="sm" title="Повторити анімацію" onclick="replayEvent(\''+e.id+'\')">↻</button><button class="sm danger" title="Видалити гол" onclick="removeEvent(\''+e.id+'\')">×</button>';
+    list.appendChild(d);
+  });
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function buildThemes(){
+  const box=$('themes');box.innerHTML='';
+  THEMES.forEach(([id,name,p1,p3,edge,c1])=>{
+    const b=document.createElement('button');b.className='th';b.dataset.theme=id;
+    b.style.background='linear-gradient(180deg,'+p1+','+p3+')';b.style.boxShadow='inset 0 0 0 2px '+edge;
+    b.innerHTML='<i style="background:'+c1+'"></i>'+name;
+    b.style.color=(id==='chrome'||id==='pearl')?'#111':'#fff';b.style.textShadow=(id==='chrome'||id==='pearl')?'none':'';
+    b.onclick=()=>{S.theme=id;commit();};
+    box.appendChild(b);
+  });
+}
+setInterval(()=>{$('clockDisp').textContent=fmtClock(clockSec(),S.clock.period,'mmss');},200);
+
+/* ===== Перегляд ===== */
+function overlayUrl(abs){
+  const u=new URL('overlay.html',location.href);
+  if(cfg.db)u.searchParams.set('db',cfg.db.replace(/\/+$/,''));
+  u.searchParams.set('court',cfg.court);
+  return abs?u.href:u.pathname.split('/').pop()+u.search;
+}
+function loadPreview(){$('pv').src=overlayUrl(false);}
+function fitPreview(){const w=$('pvWrap').clientWidth;$('pv').style.transform='scale('+(w/1920)+')';}
+addEventListener('resize',fitPreview);
+$('pvBg').addEventListener('change',e=>{$('pvWrap').className='pv '+e.target.value;});
+
+/* ===== Налаштування з'єднання ===== */
+function saveCfg(){
+  cfg.db=$('cfgDb').value.trim().replace(/\/+$/,'');cfg.court=($('cfgCourt').value.trim()||'court_1').replace(/[^\w-]/g,'_');
+  try{localStorage.setItem('fb_cfg',JSON.stringify(cfg));}catch(e){}
+  openBC();loadPreview();
+  initialPull().then(()=>{commit();});
+}
+function copyLink(){
+  const url=overlayUrl(true);
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>setStatusTemp('Посилання скопійовано')).catch(()=>prompt('Посилання на оверлей:',url));
+}
+function setStatusTemp(t){const o=$('stxt').textContent,d=$('dot').className;$('stxt').textContent=t;setTimeout(()=>{$('stxt').textContent=o;$('dot').className=d;},1600);}
+async function initialPull(){
+  if(!cfg.db){setStatus('local','локально (без Firebase)');return;}
+  try{
+    const r=await fetch(dbUrl());if(!r.ok)throw 0;const remote=await r.json();
+    if(remote&&(remote.rev||0)>(S.rev||0)){S=merge(DEF,remote);syncInputs();}
+    setStatus('ok','Firebase · '+cfg.court);
+  }catch(e){setStatus('err','немає зв\'язку з Firebase');}
+}
+
+/* ===== Гарячі клавіші ===== */
+addEventListener('keydown',e=>{
+  const t=e.target.tagName;if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA')return;
+  if(e.code==='Space'){e.preventDefault();toggleClock();}
+  else if(e.key==='1')goal('home');
+  else if(e.key==='2')goal('away');
+  else if(e.key==='b'||e.key==='B'||e.key==='и'||e.key==='И')tog('ui.bug');
+  else if(e.key==='n'||e.key==='N'||e.key==='т'||e.key==='Т')tog('big.show');
+});
+
+/* ===== Старт ===== */
+document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addSet(+b.dataset.add));
+$('cfgDb').value=cfg.db;$('cfgCourt').value=cfg.court;
+buildThemes();bindInputs();syncInputs();renderUI();
+loadPreview();$('pv').addEventListener('load',()=>{fitPreview();});fitPreview();
+initialPull().then(()=>{renderUI();commit();});
+</script>
 </body>
 </html>
