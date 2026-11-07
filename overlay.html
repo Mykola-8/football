@@ -23,6 +23,23 @@ body.bg-black{background:#000}
 #stage[data-theme="violet"]{--p1:#51168f;--p2:#2a0a52;--p3:#12031f;--edge:#c58bff;--text:#ffffff;--sub:#e0b8ff;--c1:#ff3aa3;--c2:#b0005f;--ct:#ffffff;--s1:#1a0630;--s2:#0a0114;--st:#ffd6f0;--glow:#ff3aa3}
 #stage[data-theme="sunset"]{--p1:#ff9a3c;--p2:#d9481c;--p3:#7d1608;--edge:#ffd08a;--text:#ffffff;--sub:#ffe0b0;--c1:#2b1a3d;--c2:#120a1d;--ct:#ffd08a;--s1:#3a0f08;--s2:#150402;--st:#ffd08a;--glow:#ffb347}
 
+#stage[data-theme="ocean"]{--p1:#0e7490;--p2:#083344;--p3:#021b24;--edge:#22d3ee;--text:#ecfeff;--sub:#a5f3fc;--c1:#22d3ee;--c2:#0e7490;--ct:#00222b;--s1:#083344;--s2:#021016;--st:#67e8f9;--glow:#22d3ee}
+#stage[data-theme="ruby"]{--p1:#9f1239;--p2:#5f0a22;--p3:#2a0310;--edge:#fb7185;--text:#fff1f2;--sub:#fecdd3;--c1:#fb7185;--c2:#be123c;--ct:#ffffff;--s1:#3f0617;--s2:#16020a;--st:#fecdd3;--glow:#fb7185}
+#stage[data-theme="ink"]{--p1:#2a2a2a;--p2:#111111;--p3:#000000;--edge:#ffffff;--text:#ffffff;--sub:#cccccc;--c1:#ffffff;--c2:#cfcfcf;--ct:#000000;--s1:#000000;--s2:#000000;--st:#ffffff;--glow:#ffffff}
+#stage[data-theme="ua"]{--p1:#0057b7;--p2:#003f87;--p3:#00214d;--edge:#ffd700;--text:#ffffff;--sub:#ffe680;--c1:#ffd700;--c2:#d9a900;--ct:#00214d;--s1:#00214d;--s2:#000f26;--st:#ffd700;--glow:#ffd700}
+#stage[data-theme="mint"]{--p1:#e6fff5;--p2:#a7f3d0;--p3:#6ee7b7;--edge:#ffffff;--text:#064e3b;--sub:#047857;--c1:#059669;--c2:#047857;--ct:#ffffff;--s1:#064e3b;--s2:#022c22;--st:#a7f3d0;--glow:#34d399}
+#stage[data-theme="orange"]{--p1:#3b3b3b;--p2:#222222;--p3:#111111;--edge:#ff8a00;--text:#ffffff;--sub:#ffc27a;--c1:#ffa733;--c2:#e06a00;--ct:#1a0d00;--s1:#1a1a1a;--s2:#000000;--st:#ffa733;--glow:#ffa733}
+#stage[data-theme="rose"]{--p1:#ffe4ef;--p2:#f9a8c9;--p3:#e879a8;--edge:#ffffff;--text:#4a0d2a;--sub:#7a1d4a;--c1:#be185d;--c2:#831843;--ct:#ffffff;--s1:#4a0d2a;--s2:#200515;--st:#ffd1e6;--glow:#f472b6}
+#stage[data-theme="sky"]{--p1:#f0f9ff;--p2:#bae6fd;--p3:#7dd3fc;--edge:#ffffff;--text:#082f49;--sub:#075985;--c1:#0284c7;--c2:#075985;--ct:#ffffff;--s1:#082f49;--s2:#02111c;--st:#bae6fd;--glow:#38bdf8}
+
+/* ================= СТИЛІ ТАБЛА ================= */
+#stage[data-style="round"] .relief{border-radius:16px}
+#stage[data-style="pill"] .relief{border-radius:28px}
+#stage[data-style="pill"] #bug .relief{border-radius:42px}
+#stage[data-style="round"] .btitle.relief,#stage[data-style="pill"] .btitle.relief{border-radius:0}
+#stage[data-style="glass"] .relief{border-radius:12px;backdrop-filter:blur(10px);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--g1) 72%,transparent),color-mix(in srgb,var(--g3) 78%,transparent))}
+
 /* ================= РЕЛЬЄФ ================= */
 .relief{--g1:var(--p1);--g2:var(--p2);--g3:var(--p3);position:relative;overflow:hidden;
   background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);
@@ -49,12 +66,14 @@ body.bg-black{background:#000}
 .logo[src=""],.logo:not([src]){display:none}
 
 /* ================= ТАБЛО ================= */
-#bugwrap{position:absolute;z-index:10}
+#bugwrap{position:absolute;z-index:10;transform:translate(calc(var(--ox,0)*1px),calc(var(--oy,0)*1px))}
+#bugzoom{display:block}
 #bugwrap.pos-tl{left:50px;top:40px}
 #bugwrap.pos-tr{right:50px;top:40px;--hx:60%}
-#bugwrap.pos-tc{left:50%;top:40px;margin-left:-480px}
+#bugwrap.pos-tc{left:50%;top:40px}
+#bugwrap.pos-tc #bugzoom,#bugwrap.pos-bc #bugzoom{transform:translateX(-50%)}
 #bugwrap.pos-bl{left:50px;bottom:60px}
-#bugwrap.pos-bc{left:50%;bottom:60px;margin-left:-480px}
+#bugwrap.pos-bc{left:50%;bottom:60px}
 #bug{position:relative;display:flex;align-items:stretch;gap:4px;height:80px;
   transition:transform .85s cubic-bezier(.2,1.25,.3,1),opacity .5s}
 #bug.anim-slide.hidden{--hx:-60%}
@@ -165,7 +184,7 @@ body.bg-black{background:#000}
 <body>
 <div id="stage" data-theme="gold">
 
-  <div id="bugwrap" class="pos-tl">
+  <div id="bugwrap" class="pos-tl"><div id="bugzoom">
     <div id="bug" class="anim-slide hidden">
       <div class="clockcap relief" style="--i:0"><div class="period" id="bPeriod">1 ТАЙМ</div><div class="time" id="bTime">00:00</div></div>
       <div class="team home relief" id="bHome" style="--i:1;--k1:#d7263d;--k2:#fff">
@@ -178,7 +197,7 @@ body.bg-black{background:#000}
       </div>
       <div class="stop relief" id="bStop">+0</div>
     </div>
-  </div>
+  </div></div>
 
   <div id="big" class="hidden">
     <div class="bigpanel relief">
@@ -209,7 +228,7 @@ const DEF={
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,style:'classic',x:0,y:0},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   events:[],fx:null,rev:0
@@ -255,7 +274,7 @@ function render(){
   stage.dataset.theme=S.theme;
   stage.style.setProperty('--rel',S.ui.rel);
   const wrap=$('bugwrap'),bug=$('bug');
-  wrap.className='pos-'+S.ui.pos;wrap.style.zoom=S.ui.scale;
+  wrap.className='pos-'+S.ui.pos;$('bugzoom').style.zoom=S.ui.scale;wrap.style.setProperty('--ox',S.ui.x||0);wrap.style.setProperty('--oy',S.ui.y||0);stage.dataset.style=S.ui.style||'classic';
   bug.classList.remove('anim-slide','anim-drop','anim-zoom');bug.classList.add('anim-'+S.ui.anim);
   // назви/кольори
   $('bHomeName').textContent=nameOf(S.home);$('bAwayName').textContent=nameOf(S.away);
