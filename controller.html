@@ -59,6 +59,9 @@ button.big{padding:16px 18px;font-size:18px}
 .evrow .t{width:10px;height:10px;border-radius:50%;flex:none}
 .hint{font-size:12px;color:#6f8399;margin-top:8px}
 .val{color:#e6ebf2;margin-left:6px;text-transform:none;letter-spacing:0}
+.lthumb{width:46px;height:46px;object-fit:contain;flex:none;border-radius:6px;visibility:hidden;background:repeating-conic-gradient(#3a3f47 0% 25%,#2b2f36 0% 50%) 0 0/12px 12px}
+.lgrow{background:#0f151d;border:1px solid #243041;border-radius:10px;padding:10px;margin-bottom:8px}
+.lgrow summary{cursor:pointer;color:#8ba0b9;font-size:13px;margin:8px 0}
 .kbd{display:inline-block;background:#243246;border-radius:5px;padding:1px 6px;font-size:12px;font-weight:700;margin:0 2px}
 @media(max-width:1000px){.layout{grid-template-columns:1fr}.side{position:static;order:-1}.main{grid-template-columns:1fr}}
 </style>
@@ -251,6 +254,15 @@ button.big{padding:16px 18px;font-size:18px}
     <div class="hint">↻ — повторити анімацію голу. × — видалити гол і зняти 1 з рахунку.</div>
   </div>
 
+  <!-- ЛОГОТИПИ -->
+  <div class="card wide">
+    <h2>Логотипи (до 10)</h2>
+    <div class="row"><button class="sm" onclick="allLogos(true)">Показати всі</button><button class="sm" onclick="allLogos(false)">Сховати всі</button></div>
+    <div id="logoList"></div>
+    <input type="file" id="logoFile" accept="image/*" hidden>
+    <div class="hint">Найкраще — PNG з прозорим фоном: логотип показується чисто, без рамок і підкладок (на хромакеї або прозорому фоні). За замовчуванням логотипи стоять по центру зверху, розмір і зсув у кожного свої.</div>
+  </div>
+
   <!-- З'ЄДНАННЯ -->
   <div class="card wide">
     <h2>З'єднання та матч</h2>
@@ -285,6 +297,7 @@ button.big{padding:16px 18px;font-size:18px}
 const PERIODS={pre:'Перед матчем',p1:'1 тайм',ht:'Перерва',p2:'2 тайм',et1:'Дод. час 1',et2:'Дод. час 2',pens:'Пенальті',ft:'Кінець матчу'};
 const LIM={p1:45,p2:90,et1:105,et2:120};
 const START={pre:0,p1:0,p2:45*60,et1:90*60,et2:105*60};
+const LOGO_DEF=Object.fromEntries(Array.from({length:10},(_,i)=>['l'+(i+1),{on:false,rev:0,name:'',x:0,y:0,size:220}]));
 const DEF={
   home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logo:'',score:0},
   away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logo:'',score:0},
@@ -294,6 +307,7 @@ const DEF={
   ui:{pos:'bc',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,style:'classic',x:0,y:0,board:'wide',auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblem:'',v2:0},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
+  logos:LOGO_DEF,
   events:[],fx:null,rev:0
 };
 const THEMES=[
@@ -444,6 +458,72 @@ function resetPos(){S.ui.x=0;S.ui.y=0;S.ui.scale=1;syncInputs();commit();}
 function tog(p){setP(S,p,!getP(S,p));commit();}
 function setBigTitle(t){S.big.title=t;syncInputs();commit();}
 
+/* ===== Логотипи ===== */
+const LOGO_KEYS=Array.from({length:10},(_,i)=>'l'+(i+1));
+let pendingLogo=null;
+const logoUrl=k=>(cfg.db||'').replace(/\/+$/,'')+'/football/'+cfg.court+'_logos/'+k+'.json';
+const logoKey=k=>'fb_logo_'+cfg.court+'_'+k;
+function fileToData(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();
+      im.onload=()=>{let max=700,d;
+        do{const k=Math.min(1,max/Math.max(im.width,im.height));
+          const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.width*k));cv.height=Math.max(1,Math.round(im.height*k));
+          cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);d=cv.toDataURL('image/png');max=Math.round(max*0.7);
+        }while(d.length>900000&&max>120);
+        res(d);};
+      im.onerror=rej;im.src=fr.result;};
+    fr.onerror=rej;fr.readAsDataURL(file);
+  });
+}
+async function getLogoData(k){
+  const rev=S.logos[k].rev;if(!rev)return null;
+  try{const j=JSON.parse(localStorage.getItem(logoKey(k))||'null');if(j&&j.rev===rev)return j.data;}catch(e){}
+  if(cfg.db){try{const r=await fetch(logoUrl(k));const j=await r.json();
+    if(j&&j.rev===rev){try{localStorage.setItem(logoKey(k),JSON.stringify(j));}catch(e){}return j.data;}}catch(e){}}
+  return null;
+}
+async function setThumb(k){
+  const img=$('lt_'+k);const d=await getLogoData(k);
+  if(d){img.src=d;img.style.visibility='visible';}else{img.removeAttribute('src');img.style.visibility='hidden';}
+}
+function pickLogo(k){pendingLogo=k;$('logoFile').value='';$('logoFile').click();}
+async function uploadLogo(k,file){
+  try{
+    const data=await fileToData(file);const rev=Date.now();
+    try{localStorage.setItem(logoKey(k),JSON.stringify({rev,data}));}catch(e){}
+    if(cfg.db){const r=await fetch(logoUrl(k),{method:'PUT',body:JSON.stringify({rev,data})});if(!r.ok)throw new Error('db '+r.status);}
+    S.logos[k].rev=rev;S.logos[k].name=file.name;S.logos[k].on=true;
+    commit();setThumb(k);
+  }catch(e){setStatus('err','Не вдалося завантажити логотип');}
+}
+async function deleteLogo(k){
+  S.logos[k].rev=0;S.logos[k].on=false;S.logos[k].name='';
+  try{localStorage.removeItem(logoKey(k));}catch(e){}
+  if(cfg.db){try{await fetch(logoUrl(k),{method:'DELETE'});}catch(e){}}
+  commit();setThumb(k);
+}
+function resetLogoPos(k){S.logos[k].x=0;S.logos[k].y=0;S.logos[k].size=220;syncInputs();commit();}
+function allLogos(on){LOGO_KEYS.forEach(k=>{if(S.logos[k].rev)S.logos[k].on=on;});commit();}
+function buildLogos(){
+  const box=$('logoList');box.innerHTML='';
+  LOGO_KEYS.forEach((k,i)=>{
+    const d=document.createElement('div');d.className='lgrow';
+    d.innerHTML='<div class="row"><img id="lt_'+k+'" class="lthumb" alt=""><div class="grow"><b>Логотип '+(i+1)+'</b><div class="hint" style="margin:0" id="ln_'+k+'"></div></div>'+
+      '<button class="sm" onclick="pickLogo(\''+k+'\')">Завантажити</button>'+
+      '<button class="sm" data-toggle="logos.'+k+'.on" onclick="tog(\'logos.'+k+'.on\')">Показати</button>'+
+      '<button class="sm danger" title="Видалити" onclick="deleteLogo(\''+k+'\')">×</button></div>'+
+      '<details><summary>Розмір і позиція</summary>'+
+      '<div class="row"><label class="f">Розмір (ширина) <b class="val" data-val="logos.'+k+'.size"></b><input type="range" min="40" max="1400" step="5" data-path="logos.'+k+'.size" data-num="1"></label></div>'+
+      '<div class="row"><label class="f">По горизонталі <b class="val" data-val="logos.'+k+'.x"></b><input type="range" min="-960" max="960" step="5" data-path="logos.'+k+'.x" data-num="1"></label></div>'+
+      '<div class="row"><label class="f">По вертикалі <b class="val" data-val="logos.'+k+'.y"></b><input type="range" min="-40" max="1000" step="5" data-path="logos.'+k+'.y" data-num="1"></label></div>'+
+      '<div class="row"><button class="sm" onclick="resetLogoPos(\''+k+'\')">Скинути позицію і розмір</button></div></details>';
+    box.appendChild(d);
+  });
+  $('logoFile').addEventListener('change',e=>{const f=e.target.files[0];if(f&&pendingLogo)uploadLogo(pendingLogo,f);});
+}
+
 /* ===== Прив'язка полів ===== */
 function bindInputs(){
   document.querySelectorAll('[data-path]').forEach(el=>{
@@ -470,6 +550,7 @@ function renderUI(){
   $('btnStart').classList.toggle('act',!S.clock.running);$('btnPause').classList.toggle('act',S.clock.running);
   $('clockPer').textContent=PERIODS[S.clock.period]||'';
   document.querySelectorAll('[data-val]').forEach(el=>{const v=getP(S,el.dataset.val);const k=el.dataset.val;el.textContent=k==='ui.scale'?(+v).toFixed(2)+'×':(k==='ui.autoDur'||k==='ui.goalDelay')?v+' с':v+' px';});
+  LOGO_KEYS.forEach(k=>{const e=$('ln_'+k);if(e)e.textContent=S.logos[k].name||'не завантажено';});
   // список голів
   const list=$('evlist');list.innerHTML='';
   const goals=S.events.filter(e=>e.type==='goal');
@@ -543,9 +624,9 @@ addEventListener('keydown',e=>{
 document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addSet(+b.dataset.add));
 $('cfgDb').value=cfg.db;$('cfgCourt').value=cfg.court;
-buildThemes();bindInputs();syncInputs();renderUI();
+buildThemes();buildLogos();bindInputs();syncInputs();renderUI();
 loadPreview();$('pv').addEventListener('load',()=>{fitPreview();});fitPreview();
-initialPull().then(()=>{renderUI();commit();});
+initialPull().then(()=>{renderUI();commit();LOGO_KEYS.forEach(setThumb);});
 </script>
 </body>
 </html>
