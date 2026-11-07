@@ -103,6 +103,13 @@ body.bg-black{background:#000}
   font-size:34px;font-weight:800;color:var(--ct);transform-origin:top center;transform:scaleY(0);opacity:0;transition:transform .45s cubic-bezier(.2,1.3,.3,1),opacity .3s}
 .stop.on{transform:scaleY(1);opacity:1}
 
+/* ================= ЛОГОТИПИ ================= */
+#logos{position:absolute;inset:0;z-index:6;pointer-events:none}
+.lg{position:absolute;left:50%;top:40px;height:auto;opacity:0;pointer-events:none;
+  transform:translate(calc(-50% + var(--lx,0)*1px),calc(var(--ly,0)*1px));
+  transition:opacity .6s ease,width .25s ease,transform .25s ease}
+.lg.on{opacity:1}
+
 /* ================= ВЕЛИКИЙ НИЖНІЙ БАР ================= */
 #widewrap{position:absolute;z-index:10;pointer-events:none;transform:translate(calc(var(--ox,0)*1px),calc(var(--oy,0)*1px))}
 #widezoom{display:block}
@@ -236,6 +243,8 @@ body.bg-black{background:#000}
 <body>
 <div id="stage" data-theme="gold">
 
+  <div id="logos"></div>
+
   <div id="bugwrap" class="pos-tl"><div id="bugzoom">
     <div id="bug" class="anim-slide hidden">
       <div class="clockcap relief" style="--i:0"><div class="period" id="bPeriod">1 ТАЙМ</div><div class="time" id="bTime">00:00</div></div>
@@ -288,6 +297,7 @@ body.bg-black{background:#000}
 /* ===== Спільні константи (як у controller.html) ===== */
 const PERIODS={pre:'ПЕРЕД МАТЧЕМ',p1:'1 ТАЙМ',ht:'ПЕРЕРВА',p2:'2 ТАЙМ',et1:'ДОД. ЧАС 1',et2:'ДОД. ЧАС 2',pens:'ПЕНАЛЬТІ',ft:'КІНЕЦЬ МАТЧУ'};
 const LIM={p1:45,p2:90,et1:105,et2:120};
+const LOGO_DEF=Object.fromEntries(Array.from({length:10},(_,i)=>['l'+(i+1),{on:false,rev:0,name:'',x:0,y:0,size:220}]));
 const DEF={
   home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logo:'',score:0},
   away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logo:'',score:0},
@@ -297,6 +307,7 @@ const DEF={
   ui:{pos:'bc',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,style:'classic',x:0,y:0,board:'wide',auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblem:''},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
+  logos:LOGO_DEF,
   events:[],fx:null,rev:0
 };
 function merge(d,s){
@@ -381,6 +392,7 @@ function render(){
   const fx=S.fx;
   if(!initialized){lastFx=fx?fx.id:null;initialized=true;}
   else if(fx&&fx.id!==lastFx){lastFx=fx.id;if(Math.abs(Date.now()-fx.ts)<45000)playFx(fx);}
+  renderLogos();
   tick(true);
 }
 function setScore(el,val,key){
@@ -459,6 +471,30 @@ function renderWide(show,isWide){
   }
   $('wide').classList.toggle('hidden',!show);
   $('wscorers').classList.toggle('on',!!(show&&sessionOn));
+}
+
+/* ===== Логотипи (до 10) ===== */
+const logoEls={},logoCache={};
+(function(){const box=$('logos');for(let i=1;i<=10;i++){const im=document.createElement('img');im.className='lg';im.alt='';box.appendChild(im);logoEls['l'+i]=im;}})();
+async function getLogoData(k,rev){
+  const c=logoCache[k];if(c&&c.rev===rev)return c.data;
+  try{const j=JSON.parse(localStorage.getItem('fb_logo_'+court+'_'+k)||'null');if(j&&j.rev===rev){logoCache[k]=j;return j.data;}}catch(e){}
+  if(cfg.db){
+    try{const r=await fetch(cfg.db+'/football/'+court+'_logos/'+k+'.json');const j=await r.json();if(j&&j.rev===rev){logoCache[k]=j;return j.data;}}catch(e){}
+  }
+  return null;
+}
+function renderLogos(){
+  for(let i=1;i<=10;i++){
+    const k='l'+i,l=S.logos[k],el=logoEls[k];
+    el.style.width=(l.size||220)+'px';el.style.setProperty('--lx',l.x||0);el.style.setProperty('--ly',l.y||0);
+    if(!l.rev){el.removeAttribute('src');el.dataset.rev='';}
+    else if(el.dataset.rev!==String(l.rev)){
+      el.dataset.rev=String(l.rev);el.removeAttribute('src');
+      getLogoData(k,l.rev).then(d=>{if(d&&el.dataset.rev===String(S.logos[k].rev)){el.src=d;el.classList.toggle('on',!!S.logos[k].on);}});
+    }
+    el.classList.toggle('on',!!(l.on&&l.rev&&el.getAttribute('src')));
+  }
 }
 
 /* ===== Анімації подій ===== */
