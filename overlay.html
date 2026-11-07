@@ -317,9 +317,23 @@ function merge(d,s){
 }
 
 /* ===== Параметри з'єднання ===== */
+const DB_CANDIDATES=['https://football-3ed62-default-rtdb.europe-west1.firebasedatabase.app','https://football-3ed62-default-rtdb.firebaseio.com','https://football-3ed62-default-rtdb.asia-southeast1.firebasedatabase.app'];
+async function detectDb(){
+  let list=DB_CANDIDATES.slice();
+  if(q.has('db'))return cfg.db;
+  try{const c=localStorage.getItem('fb_db_auto');if(c)list=[c].concat(list.filter(x=>x!==c));}catch(e){}
+  for(const u of list){
+    try{const r=await fetch(u+'/.json?shallow=true');
+      if(r.ok||r.status===401||r.status===403){cfg.db=u;try{localStorage.setItem('fb_db_auto',u);}catch(e){}return u;}
+    }catch(e){}
+  }
+  return '';
+}
+
 const q=new URLSearchParams(location.search);
 let cfg={db:'',court:'court_1'};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfg')||'{}'));}catch(e){}
+cfg.db='';try{cfg.db=localStorage.getItem('fb_db_auto')||'';}catch(e){}
 if(q.has('db'))cfg.db=q.get('db');
 if(q.has('court'))cfg.court=q.get('court');
 cfg.db=(cfg.db||'').replace(/\/+$/,'');
@@ -564,7 +578,8 @@ try{const bc=new BroadcastChannel('fb_football_'+court);bc.onmessage=e=>apply(e.
 addEventListener('storage',e=>{if(e.key==='fb_state_'+court&&e.newValue){try{apply(JSON.parse(e.newValue));}catch(_){}}});
 try{const ls=localStorage.getItem('fb_state_'+court);if(ls)apply(JSON.parse(ls));}catch(e){}
 if(!initialized){render();}
-if(cfg.db){
+detectDb().then(()=>{
+  if(!cfg.db)return;
   const url=cfg.db+'/football/'+court+'.json';
   const refetch=()=>fetch(url).then(r=>r.json()).then(apply).catch(()=>{});
   refetch();
@@ -575,7 +590,7 @@ if(cfg.db){
     es.onerror=()=>{};
   }
   open();
-}
+});
 </script>
 </body>
 </html>
