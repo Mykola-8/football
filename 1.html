@@ -1,291 +1,398 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* Чистий прозорий фон для OBS Studio */
-        html, body {
-            background: transparent !important;
-            background-color: transparent !important;
-            margin: 0;
-            padding: 20px;
-            overflow: hidden;
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-        }
+<meta charset="utf-8">
+<title>Football Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+:root{--rel:1}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:'Barlow Condensed','Oswald','Arial Narrow',Impact,sans-serif;color:#fff}
+body.bg-green{background:#00b140}
+body.bg-black{background:#000}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden}
 
-        .scoreboard-container {
-            display: flex;
-            flex-direction: column;
-            width: max-content;
-            filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.6));
-            transform-origin: top left;
-            transition: transform 0.2s ease;
-        }
+/* ================= ТЕМИ ================= */
+#stage[data-theme="gold"]{--p1:#4a3d1c;--p2:#241d0c;--p3:#120e05;--edge:#d4af37;--text:#fff7dc;--sub:#e8cf86;--c1:#f9e28a;--c2:#b8892b;--ct:#1d1400;--s1:#2b2b2b;--s2:#0c0c0c;--st:#ffd75e;--glow:#ffd75e}
+#stage[data-theme="chrome"]{--p1:#f4f7fa;--p2:#b6c0ca;--p3:#7a8693;--edge:#ffffff;--text:#0c1824;--sub:#33485c;--c1:#2a3f55;--c2:#0c1a29;--ct:#ffffff;--s1:#1c2b3a;--s2:#08121d;--st:#ffffff;--glow:#9fd4ff}
+#stage[data-theme="neon"]{--p1:#123a86;--p2:#0a2160;--p3:#050f33;--edge:#3aa0ff;--text:#ffffff;--sub:#8fc8ff;--c1:#2f86ff;--c2:#0b3fb0;--ct:#ffffff;--s1:#0a1a45;--s2:#030a22;--st:#8fe0ff;--glow:#3aa0ff}
+#stage[data-theme="carbon"]{--p1:#3a3a3a;--p2:#1a1a1a;--p3:#080808;--edge:#8c8c8c;--text:#ffffff;--sub:#bdbdbd;--c1:#ff4545;--c2:#a80f0f;--ct:#ffffff;--s1:#111;--s2:#000;--st:#ffffff;--glow:#ff4545}
+#stage[data-theme="emerald"]{--p1:#146b4b;--p2:#094231;--p3:#03201a;--edge:#3ee08f;--text:#f0fff7;--sub:#9af0c6;--c1:#46f0a0;--c2:#12945a;--ct:#021a10;--s1:#0a3a28;--s2:#02140d;--st:#7dffc0;--glow:#3ee08f}
+#stage[data-theme="pearl"]{--p1:#ffffff;--p2:#e4e6ee;--p3:#bfc3d2;--edge:#ffffff;--text:#1a1a2e;--sub:#4b4f6a;--c1:#7a4cff;--c2:#3b1fc9;--ct:#ffffff;--s1:#2a2a45;--s2:#101020;--st:#ffffff;--glow:#9a7bff}
+#stage[data-theme="violet"]{--p1:#51168f;--p2:#2a0a52;--p3:#12031f;--edge:#c58bff;--text:#ffffff;--sub:#e0b8ff;--c1:#ff3aa3;--c2:#b0005f;--ct:#ffffff;--s1:#1a0630;--s2:#0a0114;--st:#ffd6f0;--glow:#ff3aa3}
+#stage[data-theme="sunset"]{--p1:#ff9a3c;--p2:#d9481c;--p3:#7d1608;--edge:#ffd08a;--text:#ffffff;--sub:#ffe0b0;--c1:#2b1a3d;--c2:#120a1d;--ct:#ffd08a;--s1:#3a0f08;--s2:#150402;--st:#ffd08a;--glow:#ffb347}
 
-        .sponsor-box {
-            background: linear-gradient(to right, #6b0f34, #8b1342); 
-            padding: 0 20px;
-            width: max-content;
-            min-width: 130px;
-            height: 52px;
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            margin-bottom: -1px; 
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            max-height: 0;
-            opacity: 0;
-            transform: scaleY(0);
-            transform-origin: bottom left;
-            transition: max-height 0.4s ease, opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.3s ease;
-            overflow: hidden;
-        }
+/* ================= РЕЛЬЄФ ================= */
+.relief{--g1:var(--p1);--g2:var(--p2);--g3:var(--p3);position:relative;overflow:hidden;
+  background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,calc(.40*var(--rel))),
+    inset 0 -4px 0 rgba(0,0,0,calc(.50*var(--rel))),
+    inset 2px 0 0 rgba(255,255,255,calc(.14*var(--rel))),
+    inset -2px 0 0 rgba(0,0,0,calc(.28*var(--rel))),
+    0 0 0 2px var(--edge),
+    0 10px 22px rgba(0,0,0,.55)}
+.relief::before{content:"";position:absolute;left:0;right:0;top:0;height:50%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,calc(.32*var(--rel))),rgba(255,255,255,0))}
+.relief::after{content:"";position:absolute;top:-10%;bottom:-10%;width:70px;left:-140px;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,calc(.38*var(--rel))),transparent);
+  transform:skewX(-20deg);animation:shine 7s infinite}
+@keyframes shine{0%,72%{left:-140px}100%{left:130%}}
+.relief>*{position:relative;z-index:1}
+.score.relief{--g1:var(--s1);--g2:var(--s2);--g3:var(--s2)}
+.clockcap.relief,.stop.relief,.btitle.relief{--g1:var(--c1);--g2:var(--c2);--g3:var(--c2)}
+.emb{color:var(--text);text-shadow:0 1px 0 rgba(255,255,255,calc(.30*var(--rel))),0 -1px 0 rgba(0,0,0,calc(.55*var(--rel))),0 3px 6px rgba(0,0,0,.5)}
+.kit{align-self:stretch;width:20px;flex:none;position:relative;background:linear-gradient(90deg,var(--k1),var(--k1));box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset 2px 0 0 rgba(255,255,255,calc(.35*var(--rel)))}
+.kit i{position:absolute;left:7px;top:0;bottom:0;width:6px;background:var(--k2)}
+.logo{height:52px;width:52px;object-fit:contain;flex:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.logo[src=""],.logo:not([src]){display:none}
 
-        .sponsor-box.visible {
-            max-height: 52px;
-            opacity: 1;
-            transform: scaleY(1);
-            padding: 6px 20px;
-        }
+/* ================= ТАБЛО ================= */
+#bugwrap{position:absolute;z-index:10}
+#bugwrap.pos-tl{left:50px;top:40px}
+#bugwrap.pos-tr{right:50px;top:40px;--hx:60%}
+#bugwrap.pos-tc{left:50%;top:40px;margin-left:-480px}
+#bugwrap.pos-bl{left:50px;bottom:60px}
+#bugwrap.pos-bc{left:50%;bottom:60px;margin-left:-480px}
+#bug{position:relative;display:flex;align-items:stretch;gap:4px;height:80px;
+  transition:transform .85s cubic-bezier(.2,1.25,.3,1),opacity .5s}
+#bug.anim-slide.hidden{--hx:-60%}
+#bug.hidden{opacity:0;transform:translateX(var(--hx,-60%)) translateY(var(--hy,0)) scale(var(--hs,1))}
+#bug.anim-drop.hidden{--hx:0%;--hy:-220%}
+#bugwrap.pos-bl #bug.anim-drop.hidden,#bugwrap.pos-bc #bug.anim-drop.hidden{--hy:220%}
+#bug.anim-zoom.hidden{--hx:0%;--hs:.3}
+#bug.intro>*:not(.stop){animation:partin .75s both cubic-bezier(.2,1.2,.3,1);animation-delay:calc(var(--i)*.09s)}
+@keyframes partin{from{opacity:0;transform:translateY(-34px) scaleY(.4)}to{opacity:1;transform:none}}
+.clockcap{width:168px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ct)}
+.clockcap .period{font-size:16px;font-weight:700;letter-spacing:3px;line-height:1;margin-bottom:2px;text-shadow:0 1px 0 rgba(255,255,255,calc(.3*var(--rel)))}
+.clockcap .time{font-size:48px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(255,255,255,calc(.3*var(--rel))),0 -1px 0 rgba(0,0,0,calc(.3*var(--rel)))}
+.team{display:flex;align-items:center;gap:12px;min-width:300px;max-width:470px;padding-right:22px}
+.team.away{flex-direction:row-reverse;padding-right:0;padding-left:22px;text-align:right}
+.tname{font-size:42px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.team.home .logo{margin-left:2px}
+.team.away .logo{margin-right:2px}
+.score{width:70px;display:flex;align-items:center;justify-content:center;font-size:62px;font-weight:800;color:var(--st);font-variant-numeric:tabular-nums}
+.score .n{display:block;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 14px color-mix(in srgb,var(--st) 40%,transparent)}
+.score.pop .n{animation:pop 1s cubic-bezier(.2,1.4,.3,1)}
+.score.pop{animation:scoreflash 1.6s}
+@keyframes pop{0%{transform:scale(1)}25%{transform:scale(2.1) rotate(-6deg)}55%{transform:scale(.85)}100%{transform:scale(1)}}
+@keyframes scoreflash{0%,100%{filter:brightness(1)}20%{filter:brightness(2.2) saturate(1.4)}}
+.team.goalglow{animation:tglow 2.6s}
+@keyframes tglow{0%,100%{filter:none}25%,60%{filter:brightness(1.5) drop-shadow(0 0 16px var(--k1))}}
+.stop{position:absolute;top:calc(100% + 5px);left:0;width:168px;height:44px;display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:800;color:var(--ct);transform-origin:top center;transform:scaleY(0);opacity:0;transition:transform .45s cubic-bezier(.2,1.3,.3,1),opacity .3s}
+.stop.on{transform:scaleY(1);opacity:1}
 
-        .sponsor-box span { font-size: 10px; display: block; margin-top: -4px; letter-spacing: 2px; text-align: center; }
-        .sponsor-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+/* ================= ГОЛ ================= */
+#fxlayer{position:absolute;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.flash{position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at 50% 70%,var(--fc) 0%,transparent 65%);animation:flash 1.3s ease-out}
+@keyframes flash{0%{opacity:0}12%{opacity:.85}100%{opacity:0}}
+.goalwrap{position:absolute;left:0;right:0;bottom:190px;display:flex;justify-content:center}
+.gplate{width:1180px;height:176px;display:flex;align-items:stretch;transform:translateY(220px) scale(.55);opacity:0}
+.goalwrap.in .gplate{animation:gin .8s forwards cubic-bezier(.2,1.3,.3,1)}
+.goalwrap.out .gplate{animation:gout .55s forwards cubic-bezier(.6,0,.9,.5)}
+@keyframes gin{to{transform:none;opacity:1}}
+@keyframes gout{from{transform:none;opacity:1}to{transform:translateY(240px) scale(.7);opacity:0}}
+.gword{width:370px;flex:none;display:flex;align-items:center;justify-content:center;gap:14px;font-size:118px;font-weight:800;font-style:italic;color:#fff;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--k1) 80%,#fff) 0%,var(--k1) 50%,color-mix(in srgb,var(--k1) 70%,#000) 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -5px 0 rgba(0,0,0,.4);text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(255,255,255,.5);clip-path:polygon(0 0,100% 0,calc(100% - 36px) 100%,0 100%)}
+.gword .ball{font-size:84px;display:inline-block;animation:spin 1.4s cubic-bezier(.2,1,.3,1)}
+@keyframes spin{from{transform:translateX(-120px) rotate(-720deg);opacity:0}to{transform:none;opacity:1}}
+.gword span.t{animation:gpulse 1s .8s 3}
+@keyframes gpulse{50%{transform:scale(1.12)}}
+.ginfo{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 30px 0 10px;min-width:0}
+.gteam{font-size:40px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gplayer{font-size:78px;font-weight:800;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gmin{width:210px;flex:none;display:flex;align-items:center;justify-content:center;font-size:84px;font-weight:800;color:var(--ct);
+  background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -5px 0 rgba(0,0,0,.35)}
+.conf{position:absolute;top:-40px;width:14px;height:22px;opacity:.95;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(1200px) translateX(var(--dx)) rotate(900deg)}}
 
-        .main-board {
-            display: inline-flex;
-            flex-direction: column;
-            background-color: #1a1a1a;
-            border: 2px solid #b28a55;
-            border-radius: 4px;
-            border-top-left-radius: 0; 
-        }
+/* ================= БОКОВІ ПЛАШКИ (картка/заміна) ================= */
+#side{position:absolute;left:50px;bottom:220px;display:flex;flex-direction:column-reverse;gap:12px;z-index:20}
+.plate{display:flex;align-items:center;gap:16px;min-width:420px;height:92px;padding-right:30px;animation:pin .7s both cubic-bezier(.2,1.2,.3,1)}
+.plate.out{animation:pout .5s forwards cubic-bezier(.6,0,.9,.5)}
+@keyframes pin{from{transform:translateX(-130%);opacity:0}to{transform:none;opacity:1}}
+@keyframes pout{to{transform:translateX(-130%);opacity:0}}
+.plate .kit{width:18px}
+.card{width:42px;height:58px;border-radius:6px;flex:none;box-shadow:0 4px 8px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.5);transform:rotate(-8deg);animation:cardflip .9s .2s both cubic-bezier(.2,1.3,.3,1)}
+.card.y{background:linear-gradient(135deg,#ffe95a,#e8b800)}
+.card.r{background:linear-gradient(135deg,#ff5a5a,#c20000)}
+.card.yy{background:linear-gradient(135deg,#ffe95a,#e8b800);position:relative}
+.card.yy::after{content:"";position:absolute;left:9px;top:8px;right:-9px;bottom:-8px;border-radius:6px;background:linear-gradient(135deg,#ff5a5a,#c20000);z-index:-1}
+@keyframes cardflip{from{transform:rotateY(90deg) rotate(-8deg) scale(.3);opacity:0}to{transform:rotate(-8deg);opacity:1}}
+.ptext{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.pt1{font-size:42px;font-weight:700;text-transform:uppercase;line-height:1.05;white-space:nowrap}
+.pt2{font-size:22px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--sub);white-space:nowrap}
+.plate.sub{height:112px}
+.plate.sub .pt1{font-size:38px;display:flex;align-items:center;gap:10px}
+.plate.sub .in{color:#52f08c;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.plate.sub .out{color:#ff6f6f}
+.arrow{font-size:26px}
 
-        .team-row {
-            display: flex;
-            height: 48px;
-            border-bottom: 1px solid #333;
-        }
-        
-        .team-row:last-child { border-bottom: none; }
+/* ================= НИЖНЯ ПЛАШКА ================= */
+#lower{position:absolute;left:50px;bottom:70px;z-index:20;clip-path:inset(0 100% 0 0);transition:clip-path .8s cubic-bezier(.2,.9,.3,1)}
+#lower.on{clip-path:inset(-20px -40px -40px -20px)}
+#lower .lp{display:flex;align-items:stretch;min-width:560px;max-width:1300px;padding-right:40px}
+#lower .bar{width:18px;flex:none;background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
+#lower .lt{padding:10px 20px 12px 22px}
+#lower .l1{font-size:58px;font-weight:800;text-transform:uppercase;line-height:1.02}
+#lower .l2{font-size:30px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-top:2px}
 
-        .team-names {
-            width: 320px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .server-indicator {
-            color: #b28a55; 
-            font-size: 20px;
-            visibility: hidden;
-            flex-shrink: 0;
-            margin-left: 10px;
-        }
-        .server-indicator.active { visibility: visible; }
-
-        .score-box {
-            width: 40px;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            font-size: 26px;
-            font-weight: 800;
-            border-left: 2px solid #333;
-        }
-
-        .set-past {
-            background-color: #ffffff;
-            color: #1a1a1a;
-        }
-
-        .set-current {
-            background-color: #7a7a7a;
-            color: #ffffff;
-        }
-
-        .points {
-            background: linear-gradient(to bottom, #c69f66, #9c7a4b);
-            color: #ffffff;
-            width: 65px;
-            border-left: 2px solid #5a4528;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+/* ================= ВЕЛИКЕ ТАБЛО ================= */
+#big{position:absolute;left:50%;top:50%;width:1240px;z-index:15;transform:translate(-50%,-50%);transition:transform .9s cubic-bezier(.2,1.2,.3,1),opacity .5s;perspective:1200px}
+#big.hidden{opacity:0;transform:translate(-50%,-50%) scale(.55) rotateX(35deg);pointer-events:none}
+.bigpanel{padding-bottom:26px}
+.btitle{height:70px;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;letter-spacing:10px;text-transform:uppercase;color:var(--ct)}
+.brow{display:flex;align-items:center;justify-content:space-between;padding:34px 40px 8px}
+.bteam{width:430px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.bteam .logo{height:120px;width:120px}
+.bkit{height:12px;width:100%;background:var(--k1);position:relative;box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 3px 6px rgba(0,0,0,.5)}
+.bkit i{position:absolute;left:0;right:0;top:4px;height:4px;background:var(--k2)}
+.bname{font-size:62px;font-weight:800;text-transform:uppercase;line-height:1.02;min-height:64px;word-break:break-word}
+.bscore{display:flex;align-items:center;gap:14px}
+.bs{width:170px;height:190px;display:flex;align-items:center;justify-content:center;font-size:150px;font-weight:800;color:var(--st);font-variant-numeric:tabular-nums}
+.bs .n{text-shadow:0 4px 0 rgba(0,0,0,.6),0 0 24px color-mix(in srgb,var(--st) 45%,transparent)}
+.dash{font-size:110px;font-weight:800;color:var(--text);text-shadow:0 3px 6px rgba(0,0,0,.5);margin-top:-10px}
+.bscorers{display:flex;justify-content:space-between;padding:6px 40px 0;gap:60px;min-height:30px}
+.bscorers ul{list-style:none;width:480px;font-size:34px;font-weight:600;line-height:1.35;text-transform:uppercase}
+.bscorers ul.h{text-align:right}
+.bscorers li span{color:var(--sub);font-weight:700;margin-left:8px}
+.bscorers ul.h li span{margin-left:0;margin-right:0}
+</style>
 </head>
 <body>
+<div id="stage" data-theme="gold">
 
-    <div class="scoreboard-container" id="main-scoreboard">
-        <div class="sponsor-box visible" id="sponsor-block">
-            <div id="sponsor-text-node">QATAR<br><span>AIRWAYS</span></div>
-            <img id="sponsor-img-node" src="" style="display: none;">
-        </div>
-        
-        <div class="main-board">
-            <div class="team-row" id="row-team-1">
-                <div class="team-names" id="block-anim-1">
-                    <span id="name-display-t1">TELLO / ARCE</span>
-                    <span class="server-indicator" id="srv1">🎾</span>
-                </div>
-                <div class="score-box" id="t1-s1">0</div>
-                <div class="score-box" id="t1-s2">0</div>
-                <div class="score-box" id="t1-s3">0</div>
-                <div class="score-box" id="t1-s4">0</div>
-                <div class="score-box" id="t1-s5">0</div>
-                <div class="score-box points" id="t1-pts">0</div>
-            </div>
-
-            <div class="team-row" id="row-team-2">
-                <div class="team-names" id="block-anim-2">
-                    <span id="name-display-t2">GALAN / CHINGOTTO</span>
-                    <span class="server-indicator" id="srv2">🎾</span>
-                </div>
-                <div class="score-box" id="t2-s1">0</div>
-                <div class="score-box" id="t2-s2">0</div>
-                <div class="score-box" id="t2-s3">0</div>
-                <div class="score-box" id="t2-s4">0</div>
-                <div class="score-box" id="t2-s5">0</div>
-                <div class="score-box points" id="t2-pts">0</div>
-            </div>
-        </div>
+  <div id="bugwrap" class="pos-tl">
+    <div id="bug" class="anim-slide hidden">
+      <div class="clockcap relief" style="--i:0"><div class="period" id="bPeriod">1 ТАЙМ</div><div class="time" id="bTime">00:00</div></div>
+      <div class="team home relief" id="bHome" style="--i:1;--k1:#d7263d;--k2:#fff">
+        <div class="kit"><i></i></div><img class="logo" id="bHomeLogo" alt=""><div class="tname emb" id="bHomeName"></div>
+      </div>
+      <div class="score relief" id="bHS" style="--i:2"><span class="n">0</span></div>
+      <div class="score relief" id="bAS" style="--i:3"><span class="n">0</span></div>
+      <div class="team away relief" id="bAway" style="--i:4;--k1:#1b6cff;--k2:#fff">
+        <div class="kit"><i></i></div><img class="logo" id="bAwayLogo" alt=""><div class="tname emb" id="bAwayName"></div>
+      </div>
+      <div class="stop relief" id="bStop">+0</div>
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  <div id="big" class="hidden">
+    <div class="bigpanel relief">
+      <div class="btitle relief" id="bgTitle">ПЕРЕРВА</div>
+      <div class="brow">
+        <div class="bteam" id="bgHome" style="--k1:#d7263d;--k2:#fff"><img class="logo" id="bgHomeLogo" alt=""><div class="bkit"><i></i></div><div class="bname emb" id="bgHomeName"></div></div>
+        <div class="bscore"><div class="bs score relief" id="bgHS"><span class="n">0</span></div><div class="dash">:</div><div class="bs score relief" id="bgAS"><span class="n">0</span></div></div>
+        <div class="bteam" id="bgAway" style="--k1:#1b6cff;--k2:#fff"><img class="logo" id="bgAwayLogo" alt=""><div class="bkit"><i></i></div><div class="bname emb" id="bgAwayName"></div></div>
+      </div>
+      <div class="bscorers emb"><ul class="h" id="bgHL"></ul><ul id="bgAL"></ul></div>
+    </div>
+  </div>
 
-        // Оновлений Firebase Config згідно з твоїм запитом
-        const firebaseConfig = {
-            apiKey: "AIzaSyDKOG6SqtMdktckIlXHKWoPZKOwME0yr1M",
-            authDomain: "padel-2-gurskyj.firebaseapp.com",
-            databaseURL: "https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "padel-2-gurskyj",
-            storageBucket: "padel-2-gurskyj.firebasestorage.app",
-            messagingSenderId: "671715970020",
-            appId: "1:671715970020:web:d95bd60210ebcba6a915f1",
-            measurementId: "G-3NLYX413C9"
-        };
+  <div id="side"></div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const analytics = getAnalytics(app);
-        
-        const pointSequence = ['0', '15', '30', '40', 'AD'];
-        let lastAnimationTs = 0;
+  <div id="lower"><div class="lp relief"><div class="bar"></div><div class="lt"><div class="l1 emb" id="lw1"></div><div class="l2" id="lw2"></div></div></div></div>
 
-        onValue(ref(db, "padel/match_state"), (snapshot) => {
-            const state = snapshot.val();
-            if (state) {
-                document.getElementById('name-display-t1').innerText = state.p1name || "Команда 1";
-                document.getElementById('name-display-t2').innerText = state.p2name || "Команда 2";
-                
-                const currentScale = state.scale || 1;
-                document.getElementById('main-scoreboard').style.transform = `scale(${currentScale})`;
+  <div id="fxlayer"></div>
+</div>
 
-                const sBlock = document.getElementById('sponsor-block');
-                sBlock.classList.toggle('visible', !!state.showLogo);
-                
-                if (state.isAmericano) {
-                    document.getElementById('sponsor-text-node').innerHTML = "AMERICANO<br><span>MODE</span>";
-                    document.getElementById('sponsor-img-node').style.display = 'none';
-                } else if (state.logoSrc) {
-                    document.getElementById('sponsor-text-node').style.display = 'none';
-                    const imgNode = document.getElementById('sponsor-img-node');
-                    imgNode.src = state.logoSrc;
-                    imgNode.style.display = 'block';
-                } else {
-                    document.getElementById('sponsor-text-node').innerHTML = "QATAR<br><span>AIRWAYS</span>";
-                    document.getElementById('sponsor-img-node').style.display = 'none';
-                }
+<script>
+/* ===== Спільні константи (як у controller.html) ===== */
+const PERIODS={pre:'ПЕРЕД МАТЧЕМ',p1:'1 ТАЙМ',ht:'ПЕРЕРВА',p2:'2 ТАЙМ',et1:'ДОД. ЧАС 1',et2:'ДОД. ЧАС 2',pens:'ПЕНАЛЬТІ',ft:'КІНЕЦЬ МАТЧУ'};
+const LIM={p1:45,p2:90,et1:105,et2:120};
+const DEF={
+  home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logo:'',score:0},
+  away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logo:'',score:0},
+  clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
+  added:{show:false,val:0},
+  theme:'gold',
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true},
+  big:{show:false,title:''},
+  lower:{show:false,l1:'',l2:''},
+  events:[],fx:null,rev:0
+};
+function merge(d,s){
+  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.slice());
+  if(d&&typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&s[k]);return o;}
+  return (s===undefined||s===null)?d:s;
+}
 
-                if (state.isAmericano || state.isTiebreak) {
-                    document.getElementById('t1-pts').innerText = state.p1Index;
-                    document.getElementById('t2-pts').innerText = state.p2Index;
-                } else {
-                    document.getElementById('t1-pts').innerText = state.p1Index === 4 ? "AD" : (state.p2Index === 4 ? "" : pointSequence[state.p1Index]);
-                    document.getElementById('t2-pts').innerText = state.p2Index === 4 ? "AD" : (state.p1Index === 4 ? "" : pointSequence[state.p2Index]);
-                }
-                
-                document.getElementById('srv1').classList.toggle('active', state.currentServer === 1);
-                document.getElementById('srv2').classList.toggle('active', state.currentServer === 2);
-                
-                const activeSet = state.currentSet || 1;
-                for (let s = 1; s <= 5; s++) {
-                    const box1 = document.getElementById(`t1-s${s}`);
-                    const box2 = document.getElementById(`t2-s${s}`);
-                    
-                    if (state.isAmericano) {
-                        box1.style.display = 'none';
-                        box2.style.display = 'none';
-                        continue;
-                    }
+/* ===== Параметри з'єднання ===== */
+const q=new URLSearchParams(location.search);
+let cfg={db:'',court:'court_1'};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfg')||'{}'));}catch(e){}
+if(q.has('db'))cfg.db=q.get('db');
+if(q.has('court'))cfg.court=q.get('court');
+cfg.db=(cfg.db||'').replace(/\/+$/,'');
+if(q.get('bg')==='green')document.body.classList.add('bg-green');
+if(q.get('bg')==='black')document.body.classList.add('bg-black');
+if(q.get('bg')==='checker'){document.body.style.background='repeating-conic-gradient(#555 0% 25%,#333 0% 50%) 0 0/60px 60px'}
 
-                    const g1 = state[`t1_s${s}`] !== undefined ? parseInt(state[`t1_s${s}`]) : 0;
-                    const g2 = state[`t2_s${s}`] !== undefined ? parseInt(state[`t2_s${s}`]) : 0;
-                    
-                    if (s < activeSet) {
-                        box1.style.display = 'flex'; box1.className = 'score-box set-past';
-                        box2.style.display = 'flex'; box2.className = 'score-box set-past';
-                        box1.innerText = g1; box2.innerText = g2;
-                    } else if (s === activeSet) {
-                        if (g1 > 0 || g2 > 0) {
-                            box1.style.display = 'flex'; box1.className = 'score-box set-current';
-                            box2.style.display = 'flex'; box2.className = 'score-box set-current';
-                            box1.innerText = g1; box2.innerText = g2;
-                        } else {
-                            box1.style.display = 'none'; box2.style.display = 'none';
-                        }
-                    } else {
-                        box1.style.display = 'none'; box2.style.display = 'none';
-                    }
-                }
+/* ===== Масштаб сцени ===== */
+const stage=document.getElementById('stage');
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='scale('+s+')';}
+addEventListener('resize',fit);fit();
 
-                if (state.animation && state.animation.ts !== lastAnimationTs) {
-                    lastAnimationTs = state.animation.ts;
-                    const winTeam = state.animation.team;
-                    const animType = state.animation.type; 
-                    
-                    const targetBlock = document.getElementById(`block-anim-${winTeam}`);
-                    if (targetBlock) {
-                        targetBlock.style.transition = 'none';
-                        targetBlock.style.background = animType === 'set' ? '#ffffff' : '#c69f66';
-                        if(animType === 'set') targetBlock.style.color = '#1a1a1a';
+/* ===== Стан ===== */
+let S=merge(DEF,{});let initialized=false,lastFx=null,curRev=0;
+const $=id=>document.getElementById(id);
+function apply(raw){
+  if(!raw)return;
+  const n=merge(DEF,raw);
+  if((n.rev||0)<curRev)return;
+  curRev=n.rev||0;S=n;render();
+}
+function nameOf(t){return (S.ui.names==='short'&&t.short)?t.short:t.name;}
+function setKit(el,t){el.style.setProperty('--k1',t.c1);el.style.setProperty('--k2',t.c2);}
+function setLogo(img,url){if(url){if(img.getAttribute('src')!==url)img.src=url;}else img.removeAttribute('src');}
+let prevHS=null,prevAS=null,bugShown=false,bigShown=false;
 
-                        setTimeout(() => {
-                            targetBlock.style.transition = 'background 0.8s ease, color 0.8s ease';
-                            targetBlock.style.background = 'linear-gradient(to bottom, #2a2a2a, #1a1a1a)';
-                            targetBlock.style.color = 'white';
-                        }, 600);
-                    }
-                }
-            }
-        });
-    </script>
+function minuteLabel(e){return e.minute;}
+function render(){
+  stage.dataset.theme=S.theme;
+  stage.style.setProperty('--rel',S.ui.rel);
+  const wrap=$('bugwrap'),bug=$('bug');
+  wrap.className='pos-'+S.ui.pos;wrap.style.zoom=S.ui.scale;
+  bug.classList.remove('anim-slide','anim-drop','anim-zoom');bug.classList.add('anim-'+S.ui.anim);
+  // назви/кольори
+  $('bHomeName').textContent=nameOf(S.home);$('bAwayName').textContent=nameOf(S.away);
+  setKit($('bHome'),S.home);setKit($('bAway'),S.away);
+  setLogo($('bHomeLogo'),S.home.logo);setLogo($('bAwayLogo'),S.away.logo);
+  $('bPeriod').textContent=PERIODS[S.clock.period]||'';
+  $('bPeriod').style.display=PERIODS[S.clock.period]?'':'none';
+  document.querySelector('.clockcap').style.display=S.clock.show?'':'none';
+  // рахунок з анімацією
+  setScore($('bHS'),S.home.score,'h');setScore($('bAS'),S.away.score,'a');
+  // додатковий час
+  const st=$('bStop');st.textContent='+'+S.added.val;st.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
+  // показ/ховання табло
+  const wantBug=S.ui.bug&&!(S.big.show&&S.ui.hideBugOnBig);
+  if(wantBug&&!bugShown){bug.classList.remove('hidden');bug.classList.add('intro');setTimeout(()=>bug.classList.remove('intro'),1600);}
+  if(!wantBug&&bugShown)bug.classList.add('hidden');
+  bugShown=wantBug;if(!initialized&&!wantBug)bug.classList.add('hidden');
+  // велике табло
+  const big=$('big');
+  $('bgTitle').textContent=S.big.title||PERIODS[S.clock.period]||'';
+  $('bgHomeName').textContent=S.home.name;$('bgAwayName').textContent=S.away.name;
+  setKit($('bgHome'),S.home);setKit($('bgAway'),S.away);
+  setLogo($('bgHomeLogo'),S.home.logo);setLogo($('bgAwayLogo'),S.away.logo);
+  $('bgHS').firstChild.textContent=S.home.score;$('bgAS').firstChild.textContent=S.away.score;
+  fillScorers($('bgHL'),'home');fillScorers($('bgAL'),'away');
+  big.classList.toggle('hidden',!S.big.show);
+  if(S.big.show&&!bigShown){['bgHS','bgAS'].forEach(i=>{const e=$(i);e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');setTimeout(()=>e.classList.remove('pop'),1700)})}
+  bigShown=S.big.show;
+  // нижня плашка
+  $('lw1').textContent=S.lower.l1;$('lw2').textContent=S.lower.l2;$('lw2').style.display=S.lower.l2?'':'none';
+  $('lower').classList.toggle('on',!!(S.lower.show&&(S.lower.l1||S.lower.l2)));
+  // події
+  const fx=S.fx;
+  if(!initialized){lastFx=fx?fx.id:null;initialized=true;}
+  else if(fx&&fx.id!==lastFx){lastFx=fx.id;if(Math.abs(Date.now()-fx.ts)<45000)playFx(fx);}
+  tick(true);
+}
+function setScore(el,val,key){
+  const n=el.firstChild;const prev=key==='h'?prevHS:prevAS;
+  n.textContent=val;
+  if(prev!==null&&prev!==val&&val>prev){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),1700);
+    const t=$(key==='h'?'bHome':'bAway');t.classList.remove('goalglow');void t.offsetWidth;t.classList.add('goalglow');setTimeout(()=>t.classList.remove('goalglow'),2700);}
+  if(key==='h')prevHS=val;else prevAS=val;
+}
+function fillScorers(ul,team){
+  const list=(S.events||[]).filter(e=>e.type==='goal'&&e.team===team);
+  ul.innerHTML='';
+  list.forEach(e=>{const li=document.createElement('li');
+    const tag=e.kind==='pen'?' (п)':e.kind==='og'?' (а/г)':'';
+    li.innerHTML='⚽ '+esc(e.player||'—')+tag+' <span>'+esc(e.minute)+'′</span>';ul.appendChild(li);});
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ===== Годинник ===== */
+function clockSec(){const c=S.clock;return Math.max(0,c.base+(c.running?(Date.now()-c.startedAt)/1000:0));}
+function fmtClock(sec,period,fmt){
+  sec=Math.floor(sec);const lim=LIM[period];
+  if(fmt==='plus'&&lim&&sec>=lim*60){return lim+'+'+(Math.floor((sec-lim*60)/60)+1);}
+  return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+}
+let lastT='';
+function tick(force){const t=fmtClock(clockSec(),S.clock.period,S.clock.fmt);if(t!==lastT||force){lastT=t;$('bTime').textContent=t;}}
+setInterval(tick,200);
+
+/* ===== Анімації подій ===== */
+function teamOf(k){return S[k]||S.home;}
+function playFx(fx){
+  if(fx.type==='goal')goalFx(fx);
+  else if(fx.type==='card')cardFx(fx);
+  else if(fx.type==='sub')subFx(fx);
+  else if(fx.type==='replay')goalFx(fx);
+}
+function goalFx(fx){
+  const t=teamOf(fx.team);const layer=$('fxlayer');
+  const wrap=document.createElement('div');wrap.className='goalwrap';wrap.style.setProperty('--k1',t.c1);wrap.style.setProperty('--fc',t.c1);
+  const tag=fx.kind==='pen'?' (ПЕНАЛЬТІ)':fx.kind==='og'?' (АВТОГОЛ)':'';
+  wrap.innerHTML='<div class="gplate relief"><div class="gword"><span class="ball">⚽</span><span class="t">ГОЛ!</span></div>'+
+    '<div class="ginfo"><div class="gteam emb">'+esc(t.name)+tag+'</div><div class="gplayer emb">'+esc(fx.player||'')+'</div></div>'+
+    '<div class="gmin">'+esc(fx.minute||'')+'′</div></div>';
+  const flash=document.createElement('div');flash.className='flash';flash.style.setProperty('--fc',t.c1);
+  layer.appendChild(flash);layer.appendChild(wrap);
+  requestAnimationFrame(()=>wrap.classList.add('in'));
+  confetti(layer,[t.c1,t.c2,'#ffd75e','#ffffff']);
+  const dur=(fx.dur||7)*1000;
+  setTimeout(()=>{wrap.classList.remove('in');wrap.classList.add('out');},dur);
+  setTimeout(()=>{wrap.remove();flash.remove();},dur+700);
+}
+function confetti(layer,colors){
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div');c.className='conf';
+    c.style.left=(Math.random()*100)+'%';c.style.background=colors[i%colors.length];
+    c.style.setProperty('--dx',((Math.random()-.5)*400)+'px');
+    c.style.animationDuration=(2.8+Math.random()*2.4)+'s';c.style.animationDelay=(Math.random()*.9)+'s';
+    c.style.transform='rotate('+(Math.random()*360)+'deg)';
+    layer.appendChild(c);setTimeout(()=>c.remove(),6500);
+  }
+}
+function addPlate(el,dur){
+  const side=$('side');side.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');},dur);
+  setTimeout(()=>el.remove(),dur+600);
+}
+function cardFx(fx){
+  const t=teamOf(fx.team);
+  const el=document.createElement('div');el.className='plate relief';el.style.setProperty('--k1',t.c1);el.style.setProperty('--k2',t.c2);
+  const cls=fx.card==='red'?'r':fx.card==='yy'?'yy':'y';
+  const label=fx.card==='red'?'ЧЕРВОНА КАРТКА':fx.card==='yy'?'ДРУГА ЖОВТА · ВИДАЛЕННЯ':'ЖОВТА КАРТКА';
+  el.innerHTML='<div class="kit"><i></i></div><div class="card '+cls+'"></div><div class="ptext"><div class="pt1 emb">'+esc(fx.player||'')+'</div><div class="pt2">'+label+' · '+esc(t.short||t.name)+'</div></div>';
+  addPlate(el,(fx.dur||6)*1000);
+}
+function subFx(fx){
+  const t=teamOf(fx.team);
+  const el=document.createElement('div');el.className='plate sub relief';el.style.setProperty('--k1',t.c1);el.style.setProperty('--k2',t.c2);
+  el.innerHTML='<div class="kit"><i></i></div><div class="ptext"><div class="pt2">ЗАМІНА · '+esc(t.name)+'</div>'+
+    '<div class="pt1 emb"><span class="in arrow">▲</span><span class="in">'+esc(fx.pin||'')+'</span></div>'+
+    '<div class="pt1 emb"><span class="out arrow">▼</span><span class="out">'+esc(fx.pout||'')+'</span></div></div>';
+  addPlate(el,(fx.dur||7)*1000);
+}
+
+/* ===== Транспорт: Firebase REST/SSE + локальний канал ===== */
+const court=cfg.court||'court_1';
+try{const bc=new BroadcastChannel('fb_football_'+court);bc.onmessage=e=>apply(e.data);}catch(e){}
+addEventListener('storage',e=>{if(e.key==='fb_state_'+court&&e.newValue){try{apply(JSON.parse(e.newValue));}catch(_){}}});
+try{const ls=localStorage.getItem('fb_state_'+court);if(ls)apply(JSON.parse(ls));}catch(e){}
+if(!initialized){render();}
+if(cfg.db){
+  const url=cfg.db+'/football/'+court+'.json';
+  const refetch=()=>fetch(url).then(r=>r.json()).then(apply).catch(()=>{});
+  refetch();
+  function open(){
+    const es=new EventSource(url);
+    es.addEventListener('put',e=>{try{const m=JSON.parse(e.data);if(m.path==='/')apply(m.data);else refetch();}catch(_){}});
+    es.addEventListener('patch',refetch);
+    es.onerror=()=>{};
+  }
+  open();
+}
+</script>
 </body>
 </html>
