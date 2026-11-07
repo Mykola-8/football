@@ -58,6 +58,7 @@ button.big{padding:16px 18px;font-size:18px}
 .evrow .m{font-weight:700;min-width:46px;color:#9db0c6}
 .evrow .t{width:10px;height:10px;border-radius:50%;flex:none}
 .hint{font-size:12px;color:#6f8399;margin-top:8px}
+.val{color:#e6ebf2;margin-left:6px;text-transform:none;letter-spacing:0}
 .kbd{display:inline-block;background:#243246;border-radius:5px;padding:1px 6px;font-size:12px;font-weight:700;margin:0 2px}
 @media(max-width:1000px){.layout{grid-template-columns:1fr}.side{position:static;order:-1}.main{grid-template-columns:1fr}}
 </style>
@@ -171,7 +172,11 @@ button.big{padding:16px 18px;font-size:18px}
     <div class="row">
       <label class="f">Назви команд<select data-path="ui.names"><option value="full">Повні</option><option value="short">Скорочені</option></select></label>
     </div>
-    <div class="row"><label class="f">Розмір табло <input type="range" min="0.5" max="1.6" step="0.05" data-path="ui.scale" data-num="1"></label></div>
+    <div class="row"><label class="f">Стиль табло<select data-path="ui.style"><option value="classic">Класика</option><option value="round">Закруглений</option><option value="pill">Капсула</option><option value="glass">Скло</option></select></label></div>
+    <div class="row"><label class="f">Масштаб <b class="val" data-val="ui.scale"></b><input type="range" min="0.4" max="2.5" step="0.05" data-path="ui.scale" data-num="1"></label></div>
+    <div class="row"><label class="f">Позиція по горизонталі (← →) <b class="val" data-val="ui.x"></b><input type="range" min="-960" max="960" step="5" data-path="ui.x" data-num="1"></label></div>
+    <div class="row"><label class="f">Позиція по вертикалі (↑ ↓) <b class="val" data-val="ui.y"></b><input type="range" min="-540" max="540" step="5" data-path="ui.y" data-num="1"></label></div>
+    <div class="row"><button class="sm" onclick="nudge('x',-10)">←</button><button class="sm" onclick="nudge('x',10)">→</button><button class="sm" onclick="nudge('y',-10)">↑</button><button class="sm" onclick="nudge('y',10)">↓</button><button class="sm" onclick="resetPos()">Скинути позицію і масштаб</button></div>
     <div class="row"><label class="f">Рельєф (0 — плоско) <input type="range" min="0" max="1.6" step="0.1" data-path="ui.rel" data-num="1"></label></div>
   </div>
 
@@ -280,7 +285,7 @@ const DEF={
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:true,hideBugOnBig:true},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:true,hideBugOnBig:true,style:'classic',x:0,y:0},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   events:[],fx:null,rev:0
@@ -293,8 +298,17 @@ const THEMES=[
   ['emerald','Смарагд','#146b4b','#03201a','#3ee08f','#46f0a0'],
   ['pearl','Перламутр','#ffffff','#bfc3d2','#ffffff','#7a4cff'],
   ['violet','Фіолет','#51168f','#12031f','#c58bff','#ff3aa3'],
-  ['sunset','Захід','#ff9a3c','#7d1608','#ffd08a','#2b1a3d']
+  ['sunset','Захід','#ff9a3c','#7d1608','#ffd08a','#2b1a3d'],
+  ['ocean','Океан','#0e7490','#021b24','#22d3ee','#22d3ee'],
+  ['ruby','Рубін','#9f1239','#2a0310','#fb7185','#fb7185'],
+  ['ink','Туш','#2a2a2a','#000000','#ffffff','#ffffff'],
+  ['ua','Синьо-жовта','#0057b7','#00214d','#ffd700','#ffd700'],
+  ['mint','Мята','#e6fff5','#6ee7b7','#ffffff','#059669'],
+  ['orange','Графіт-оранж','#3b3b3b','#111111','#ff8a00','#ffa733'],
+  ['rose','Роза','#ffe4ef','#e879a8','#ffffff','#be185d'],
+  ['sky','Небо','#f0f9ff','#7dd3fc','#ffffff','#0284c7']
 ];
+const LIGHT=['chrome','pearl','mint','rose','sky'];
 function merge(d,s){
   if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.slice());
   if(d&&typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&s[k]);return o;}
@@ -415,6 +429,8 @@ function resetMatch(){
   S.big.show=false;S.lower.show=false;
   commit();
 }
+function nudge(ax,d){const lim=ax==='x'?960:540;S.ui[ax]=Math.max(-lim,Math.min(lim,(+S.ui[ax]||0)+d));syncInputs();commit();}
+function resetPos(){S.ui.x=0;S.ui.y=0;S.ui.scale=1;syncInputs();commit();}
 function tog(p){setP(S,p,!getP(S,p));commit();}
 function setBigTitle(t){S.big.title=t;syncInputs();commit();}
 
@@ -443,6 +459,7 @@ function renderUI(){
   document.querySelectorAll('.th').forEach(el=>el.classList.toggle('on',el.dataset.theme===S.theme));
   $('btnStart').classList.toggle('act',!S.clock.running);$('btnPause').classList.toggle('act',S.clock.running);
   $('clockPer').textContent=PERIODS[S.clock.period]||'';
+  document.querySelectorAll('[data-val]').forEach(el=>{const v=getP(S,el.dataset.val);el.textContent=el.dataset.val==='ui.scale'?(+v).toFixed(2)+'×':v+' px';});
   // список голів
   const list=$('evlist');list.innerHTML='';
   const goals=S.events.filter(e=>e.type==='goal');
@@ -462,7 +479,7 @@ function buildThemes(){
     const b=document.createElement('button');b.className='th';b.dataset.theme=id;
     b.style.background='linear-gradient(180deg,'+p1+','+p3+')';b.style.boxShadow='inset 0 0 0 2px '+edge;
     b.innerHTML='<i style="background:'+c1+'"></i>'+name;
-    b.style.color=(id==='chrome'||id==='pearl')?'#111':'#fff';b.style.textShadow=(id==='chrome'||id==='pearl')?'none':'';
+    const lt=LIGHT.includes(id);b.style.color=lt?'#111':'#fff';b.style.textShadow=lt?'none':'';
     b.onclick=()=>{S.theme=id;commit();};
     box.appendChild(b);
   });
