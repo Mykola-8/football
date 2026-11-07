@@ -267,7 +267,6 @@ button.big{padding:16px 18px;font-size:18px}
   <div class="card wide">
     <h2>З'єднання та матч</h2>
     <div class="row">
-      <label class="f" style="flex:3">Firebase Database URL<input type="url" id="cfgDb" placeholder="https://xxx-default-rtdb.europe-west1.firebasedatabase.app"></label>
       <label class="f">Поле / ідентифікатор<input type="text" id="cfgCourt" placeholder="court_1"></label>
     </div>
     <div class="row">
@@ -275,7 +274,7 @@ button.big{padding:16px 18px;font-size:18px}
       <button onclick="copyLink()">Скопіювати посилання оверлея</button>
       <button class="danger" onclick="resetMatch()">Скинути матч</button>
     </div>
-    <div class="hint">Дані пишуться у <b>/football/&lt;поле&gt;</b> (окремо від padel). Без Firebase пульт і оверлей синхронізуються лише в одному браузері (для перегляду). У PRISM/OBS додайте <b>overlay.html?db=…&amp;court=…</b> як Browser Source 1920×1080 — посилання копіюється кнопкою вище.</div>
+    <div class="hint">База Firebase підключається автоматично. Дані пишуться у <b>/football/&lt;поле&gt;</b>. У PRISM/OBS додайте посилання з кнопки вище як Browser Source 1920×1080.</div>
   </div>
 
 </div>
@@ -340,8 +339,21 @@ const getP=(o,p)=>p.split('.').reduce((a,k)=>a&&a[k],o);
 function setP(o,p,v){const ks=p.split('.');const l=ks.pop();const t=ks.reduce((a,k)=>a[k],o);t[l]=v;}
 
 /* ===== Конфіг і стан ===== */
-let cfg={db:'https://padel-2-gurskyj-default-rtdb.europe-west1.firebasedatabase.app',court:'court_1'};
+let cfg={db:'',court:'court_1'};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfg')||'{}'));}catch(e){}
+cfg.db='';try{cfg.db=localStorage.getItem('fb_db_auto')||'';}catch(e){}
+const DB_CANDIDATES=['https://football-3ed62-default-rtdb.europe-west1.firebasedatabase.app','https://football-3ed62-default-rtdb.firebaseio.com','https://football-3ed62-default-rtdb.asia-southeast1.firebasedatabase.app'];
+async function detectDb(){
+  let list=DB_CANDIDATES.slice();
+  try{const c=localStorage.getItem('fb_db_auto');if(c)list=[c].concat(list.filter(x=>x!==c));}catch(e){}
+  for(const u of list){
+    try{const r=await fetch(u+'/.json?shallow=true');
+      if(r.ok||r.status===401||r.status===403){cfg.db=u;try{localStorage.setItem('fb_db_auto',u);}catch(e){}return u;}
+    }catch(e){}
+  }
+  return '';
+}
+
 let S=merge(DEF,{});
 try{const ls=localStorage.getItem('fb_state_'+cfg.court);if(ls)S=merge(DEF,JSON.parse(ls));}catch(e){}
 function migrate(){if(!S.ui.v2){S.ui.pos='bc';S.ui.bug=false;S.ui.v2=1;}}
@@ -580,7 +592,6 @@ setInterval(()=>{$('clockDisp').textContent=fmtClock(clockSec(),S.clock.period,'
 /* ===== Перегляд ===== */
 function overlayUrl(abs){
   const u=new URL('overlay.html',location.href);
-  if(cfg.db)u.searchParams.set('db',cfg.db.replace(/\/+$/,''));
   u.searchParams.set('court',cfg.court);
   return abs?u.href:u.pathname.split('/').pop()+u.search;
 }
@@ -591,10 +602,10 @@ $('pvBg').addEventListener('change',e=>{$('pvWrap').className='pv '+e.target.val
 
 /* ===== Налаштування з'єднання ===== */
 function saveCfg(){
-  cfg.db=$('cfgDb').value.trim().replace(/\/+$/,'');cfg.court=($('cfgCourt').value.trim()||'court_1').replace(/[^\w-]/g,'_');
-  try{localStorage.setItem('fb_cfg',JSON.stringify(cfg));}catch(e){}
-  openBC();loadPreview();
-  initialPull().then(()=>{commit();});
+  cfg.court=($('cfgCourt').value.trim()||'court_1').replace(/[^\w-]/g,'_');
+  try{localStorage.setItem('fb_cfg',JSON.stringify({court:cfg.court}));}catch(e){}
+  openBC();
+  detectDb().then(()=>{loadPreview();return initialPull();}).then(()=>{commit();});
 }
 function copyLink(){
   const url=overlayUrl(true);
@@ -623,10 +634,11 @@ addEventListener('keydown',e=>{
 /* ===== Старт ===== */
 document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addSet(+b.dataset.add));
-$('cfgDb').value=cfg.db;$('cfgCourt').value=cfg.court;
+$('cfgCourt').value=cfg.court;
 buildThemes();buildLogos();bindInputs();syncInputs();renderUI();
 loadPreview();$('pv').addEventListener('load',()=>{fitPreview();});fitPreview();
-initialPull().then(()=>{renderUI();commit();LOGO_KEYS.forEach(setThumb);});
+const dbBefore=cfg.db;
+detectDb().then(u=>{if(cfg.db!==dbBefore)loadPreview();if(!u)setStatus('err','База Firebase не знайдена');return initialPull();}).then(()=>{renderUI();commit();LOGO_KEYS.forEach(setThumb);});
 </script>
 </body>
 </html>
