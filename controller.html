@@ -72,6 +72,11 @@ details.card[open]>summary{border-bottom:1px solid #243041;color:#e6ebf2}
 .cbody{padding:14px}
 .sub{font-size:12px;font-weight:700;color:#9db0c6;margin:8px 0 8px;padding-top:6px;border-top:1px dashed #2b3a4f}
 .cbody>.sub:first-child{border-top:0;padding-top:0;margin-top:0}
+.plrow{display:grid;grid-template-columns:30px 58px minmax(0,1fr) 36px auto auto auto;gap:6px;align-items:center;margin-bottom:6px}
+.plrow .plix{color:#7f94ad;font-size:12px;font-weight:700;text-align:center}
+.plrow input.pln{text-align:center}
+.plrow .lthumb{width:36px;height:36px}
+textarea{background:#0e1218;border:1px solid #2b3a4f;color:#e6ebf2;border-radius:8px;padding:9px 10px;font:inherit;width:100%;min-height:84px;resize:vertical}
 .bgprev{min-height:60px;margin-top:8px;border-radius:8px;padding:6px;display:flex;justify-content:center;align-items:center;background:repeating-conic-gradient(#3a3f47 0% 25%,#2b2f36 0% 50%) 0 0/16px 16px}
 .bgprev img{max-height:160px;max-width:100%}
 input[type=file]{color:#9db0c6;font-size:13px;max-width:100%}
@@ -199,6 +204,7 @@ button.warn{background:#7a5a12;border-color:#c79a2a}
 
   <div class="card" data-id="small">
     <h2>🔹 Мале табло: позиція, розмір, вигляд</h2>
+    <div class="row"><label class="f">Вид табла<select data-path="ui.smallMode"><option value="full">Повне (назви + час збоку)</option><option value="compact">Скорочене (лого + рахунок + час)</option></select></label></div>
     <div class="row">
       <label class="f">Позиція<select data-path="ui.pos"><option value="tl">Зверху зліва</option><option value="tc">Зверху по центру</option><option value="tr">Зверху справа</option><option value="bl">Знизу зліва</option><option value="bc">Знизу по центру</option></select></label>
       <label class="f">Поява<select data-path="ui.anim"><option value="slide">Виїзд збоку</option><option value="drop">Падіння</option><option value="zoom">Збільшення</option></select></label>
@@ -300,6 +306,24 @@ button.warn{background:#7a5a12;border-color:#c79a2a}
     <div class="hint">↻ — показати знову. × — видалити подію (для гола також знімає 1 з рахунку).</div>
   </div>
 
+  <!-- СКЛАД -->
+  <div class="card wide" data-id="lineup">
+    <h2>👥 Склад команди (табло зі складом)</h2>
+    <div class="sub">Показ на екрані</div>
+    <div class="row">
+      <button class="big act grow" onclick="showLineup('home')">Показати склад: <span data-bind="home.name"></span></button>
+      <button class="big act grow" onclick="showLineup('away')">Показати склад: <span data-bind="away.name"></span></button>
+      <button class="big danger" onclick="hideLineup()">Сховати склад</button>
+    </div>
+    <div class="row">
+      <label class="f">На схемі показувати<select data-path="lu.label"><option value="num">Номер гравця</option><option value="name">Прізвище гравця</option><option value="both">Номер і прізвище</option></select></label>
+      <label class="f">Порядок гравців зліва<select data-path="lu.order"><option value="att">Від нападників до воротаря</option><option value="gk">Від воротаря до нападників</option></select></label>
+    </div>
+    <div class="hint">Якщо хоча б в одного гравця є фото, зліва показуються картки з фото (без фото — з номером). Якщо фото немає зовсім, зліва список прізвищ, а справа схема розташування на полі.</div>
+    <datalist id="formList"><option value="4-4-2"><option value="4-3-3"><option value="4-2-3-1"><option value="4-1-4-1"><option value="4-5-1"><option value="3-5-2"><option value="3-4-3"><option value="3-4-2-1"><option value="5-3-2"><option value="5-4-1"></datalist>
+    <div id="luBox"></div>
+  </div>
+
   <!-- ЛОГОТИПИ -->
   <div class="card wide" data-id="logos">
     <h2>🖼 Логотипи на екрані (до 10)</h2>
@@ -360,16 +384,19 @@ const PERIODS={pre:'Перед матчем',p1:'1 тайм',ht:'Перерва'
 const LIM={p1:45,p2:90,et1:105,et2:120};
 const START={pre:0,p1:0,p2:45*60,et1:90*60,et2:105*60};
 const LOGO_DEF=Object.fromEntries(Array.from({length:10},(_,i)=>['l'+(i+1),{on:false,rev:0,name:'',x:0,y:0,size:220}]));
+const mkLU=()=>({formation:'4-3-3',coach:'',starters:Array.from({length:11},()=>({n:'',name:'',photoRev:0})),subs:[]});
 const DEF={
   home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logoRev:0,score:0},
   away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logoRev:0,score:0},
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:'',v3:0},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:'',smallMode:'full',v3:0},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   logos:LOGO_DEF,
+  lineup:{home:mkLU(),away:mkLU()},
+  lu:{show:false,team:'home',label:'num',order:'att'},
   events:[],fx:null,rev:0
 };
 const THEMES=[
@@ -392,7 +419,7 @@ const THEMES=[
 ];
 const LIGHT=['chrome','pearl','mint','rose','sky'];
 function merge(d,s){
-  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.slice());
+  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.map(x=>(x&&typeof x==='object')?merge(x,undefined):x));
   if(d&&typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&s[k]);return o;}
   return (s===undefined||s===null)?d:s;
 }
@@ -419,7 +446,14 @@ async function detectDb(){
 
 let S=merge(DEF,{});
 try{const ls=localStorage.getItem('fb_state_'+cfg.court);if(ls)S=merge(DEF,JSON.parse(ls));}catch(e){}
-function migrate(){if(!S.ui.v3){S.ui.pos='tl';S.ui.bug=false;S.ui.v3=1;}}
+function migrate(){
+  if(!S.ui.v3){S.ui.pos='tl';S.ui.bug=false;S.ui.v3=1;}
+  ['home','away'].forEach(t=>{
+    const L=S.lineup[t];
+    L.starters=Array.from({length:11},(_,i)=>Object.assign({n:'',name:'',photoRev:0},(L.starters||[])[i]||{}));
+    L.subs=(L.subs||[]).map(p=>Object.assign({n:'',name:''},p));
+  });
+}
 migrate();
 let bc=null;
 function openBC(){try{if(bc)bc.close();bc=new BroadcastChannel('fb_football_'+cfg.court);}catch(e){bc=null;}}
@@ -523,6 +557,7 @@ function showSub(){
 function swapTeams(){
   const h=S.home;S.home=S.away;S.away=h;
   S.events.forEach(e=>e.team=e.team==='home'?'away':'home');
+  const lh=S.lineup.home;S.lineup.home=S.lineup.away;S.lineup.away=lh;
   syncInputs();commit();
 }
 function clearScore(){
@@ -609,10 +644,18 @@ function fitCanvas(cv,maxW,maxH){
   }
   const o=document.createElement('canvas');o.width=tw;o.height=th;const c=o.getContext('2d');c.imageSmoothingQuality='high';c.drawImage(cur,0,0,tw,th);return o;
 }
+function hasAlpha(cv){const d=cv.getContext('2d',{willReadFrequently:true}).getImageData(0,0,cv.width,cv.height).data;for(let i=3;i<d.length;i+=4)if(d[i]<250)return true;return false;}
+function encodeCanvas(cv){
+  const enc=c=>hasAlpha(c)?c.toDataURL('image/png'):c.toDataURL('image/jpeg',0.88);
+  let d=enc(cv);
+  while(d.length>900000&&cv.width>100){cv=fitCanvas(cv,Math.round(cv.width*0.8),Math.round(cv.height*0.8));d=enc(cv);}
+  return d;
+}
 async function prepImage(src,kind,doBg){
   const im=await loadImageEl(src);
   let cv=imgToCanvas(im,kind==='logo'?1000:900);
   if(doBg)bgRemoveCanvas(cv,BG);
+  if(kind==='photo')return encodeCanvas(fitCanvas(cv,360,480));
   if(kind!=='logo'||doBg)cv=trimCanvas(cv);
   cv=kind==='logo'?fitCanvas(cv,700,700):fitCanvas(cv,420,180);
   let d=cv.toDataURL('image/png');
@@ -668,18 +711,21 @@ function syncAllThumbs(){
   syncThumb('tl_home','t'+S.home.logoRev,S.home.logoRev);
   syncThumb('tl_away','t'+S.away.logoRev,S.away.logoRev);
   syncThumb('em_thumb','e'+S.ui.emblemRev,S.ui.emblemRev);
+  ['home','away'].forEach(tm=>S.lineup[tm].starters.forEach((p,i)=>syncThumb('pt_'+tm+'_'+i,'p'+p.photoRev,p.photoRev)));
 }
 
 /* --- Цілі: 'l1'..'l10' (логотипи), 'team:home|away', 'emblem' --- */
-const targetKind=t=>(t==='emblem'||t.startsWith('team:'))?'sq':'logo';
+const targetKind=t=>t.startsWith('pl:')?'photo':(t==='emblem'||t.startsWith('team:'))?'sq':'logo';
 function targetCur(t){
+  if(t.startsWith('pl:')){const q=t.split(':'),r=S.lineup[q[1]].starters[+q[2]].photoRev;return {key:'p'+r,rev:r};}
   if(t==='emblem')return {key:'e'+S.ui.emblemRev,rev:S.ui.emblemRev};
   if(t.startsWith('team:')){const r=S[t.slice(5)].logoRev;return {key:'t'+r,rev:r};}
   return {key:t,rev:S.logos[t].rev};
 }
 async function storeImage(t,data,name,fresh){
   const rev=Date.now(),cur=targetCur(t);
-  if(t==='emblem'){await putImg('e'+rev,rev,data);S.ui.emblemRev=rev;if(name!=null)S.ui.emblemName=name;}
+  if(t.startsWith('pl:')){const q=t.split(':');await putImg('p'+rev,rev,data);S.lineup[q[1]].starters[+q[2]].photoRev=rev;}
+  else if(t==='emblem'){await putImg('e'+rev,rev,data);S.ui.emblemRev=rev;if(name!=null)S.ui.emblemName=name;}
   else if(t.startsWith('team:')){await putImg('t'+rev,rev,data);S[t.slice(5)].logoRev=rev;}
   else{await putImg(t,rev,data);S.logos[t].rev=rev;if(name!=null)S.logos[t].name=name;if(fresh)S.logos[t].on=true;}
   commit();
@@ -697,7 +743,8 @@ async function bgFix(t){
 }
 function deleteTarget(t){
   const c=targetCur(t);
-  if(t==='emblem'){S.ui.emblemRev=0;S.ui.emblemName='';}
+  if(t.startsWith('pl:')){const q=t.split(':');S.lineup[q[1]].starters[+q[2]].photoRev=0;}
+  else if(t==='emblem'){S.ui.emblemRev=0;S.ui.emblemName='';}
   else if(t.startsWith('team:'))S[t.slice(5)].logoRev=0;
   else{S.logos[t].rev=0;S.logos[t].on=false;S.logos[t].name='';}
   commit();if(c.rev)delImg(c.key);
@@ -728,6 +775,54 @@ function buildLogos(){
     box.appendChild(d);
   });
   $('logoFile').addEventListener('change',e=>{const f=e.target.files[0];if(f&&pendingLogo)uploadTo(pendingLogo,f);});
+}
+
+/* ===== Склад команди ===== */
+function parsePl(line){const m=line.trim().match(/^(\d{1,3})\s*[.\-–):]*\s*(.*)$/);return m?{n:m[1],name:m[2].trim()}:{n:'',name:line.trim()};}
+function showLineup(t){S.lu.team=t;S.lu.show=true;commit();}
+function hideLineup(){S.lu.show=false;commit();}
+function subsInput(t){S.lineup[t].subs=$('lus_'+t).value.split('\n').map(x=>x.trim()).filter(Boolean).map(parsePl);commit();}
+function syncLineupText(){
+  ['home','away'].forEach(t=>{const ta=$('lus_'+t);if(ta&&document.activeElement!==ta)ta.value=S.lineup[t].subs.map(p=>(p.n?p.n+' ':'')+p.name).join('\n');});
+}
+function applyLineupText(t){
+  const lines=$('lut_'+t).value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if(!lines.length)return;
+  const L=S.lineup[t],old=L.starters.slice(),used=new Set();
+  const st=lines.slice(0,11).map(parsePl);
+  L.starters=Array.from({length:11},(_,i)=>{
+    const p=st[i];if(!p)return {n:'',name:'',photoRev:0};
+    const prev=old.find(o=>o.photoRev&&((o.n&&o.n===p.n)||(o.name&&o.name.toLowerCase()===p.name.toLowerCase())));
+    if(prev)used.add(prev.photoRev);
+    return {n:p.n,name:p.name,photoRev:prev?prev.photoRev:0};
+  });
+  old.forEach(o=>{if(o.photoRev&&!used.has(o.photoRev))delImg('p'+o.photoRev);});
+  L.subs=lines.slice(11).map(parsePl);
+  syncInputs();syncLineupText();commit();
+}
+function buildLineup(){
+  const box=$('luBox');box.innerHTML='';
+  ['home','away'].forEach(t=>{
+    const d=document.createElement('details');d.className='lgrow';d.open=(t==='home');
+    let rows='';
+    for(let i=0;i<11;i++){
+      const b='lineup.'+t+'.starters.'+i,tg='pl:'+t+':'+i;
+      rows+='<div class="plrow"><span class="plix">'+(i===0?'GK':i)+'</span><input type="text" class="pln" placeholder="№" data-path="'+b+'.n"><input type="text" placeholder="Прізвище" data-path="'+b+'.name">'+
+        '<img id="pt_'+t+'_'+i+'" class="lthumb" alt=""><button class="sm" onclick="pickLogo(\''+tg+'\')">Фото</button>'+
+        '<button class="sm" title="Прибрати фон з фото" onclick="bgFix(\''+tg+'\')">Фон</button>'+
+        '<button class="sm danger" title="Видалити фото" onclick="deleteTarget(\''+tg+'\')">×</button></div>';
+    }
+    d.innerHTML='<summary><b data-bind="'+t+'.name"></b> — склад команди</summary>'+
+      '<div class="row"><label class="f">Схема<input type="text" list="formList" data-path="lineup.'+t+'.formation" placeholder="4-3-3"></label>'+
+      '<label class="f" style="flex:2">Тренер<input type="text" data-path="lineup.'+t+'.coach" placeholder="Прізвище тренера"></label></div>'+
+      '<div class="sub">Основа (11): 1-й рядок — воротар, далі за схемою: захист → півзахист → атака (зліва направо)</div>'+rows+
+      '<div class="sub">Запасні (по одному в рядок: № Прізвище)</div>'+
+      '<textarea id="lus_'+t+'" placeholder="13 Касілья&#10;10 Хамес" oninput="subsInput(\''+t+'\')"></textarea>'+
+      '<div class="sub">Швидке введення списком</div>'+
+      '<textarea id="lut_'+t+'" placeholder="1 Курту&#10;2 Карвахаль&#10;… (перші 11 рядків — основа, решта — запасні)"></textarea>'+
+      '<div class="row" style="margin-top:8px"><button class="sm" onclick="applyLineupText(\''+t+'\')">Застосувати список</button></div>';
+    box.appendChild(d);
+  });
 }
 
 /* ===== Згортання карток і пошук ===== */
@@ -791,6 +886,7 @@ function renderUI(){
   document.querySelectorAll('[data-val]').forEach(el=>{const v=getP(S,el.dataset.val);const k=el.dataset.val;el.textContent=(k==='ui.scale'||k==='ui.wScale')?(+v).toFixed(2)+'×':(k==='ui.autoDur'||k==='ui.goalDelay')?v+' с':v+' px';});
   LOGO_KEYS.forEach(k=>{const e=$('ln_'+k);if(e)e.textContent=S.logos[k].name||'не завантажено';});
   syncAllThumbs();
+  syncLineupText();
   // список голів
   const list=$('evlist');list.innerHTML='';
   const goals=S.events.filter(e=>e.type==='goal'||e.type==='card');
@@ -864,7 +960,7 @@ addEventListener('keydown',e=>{
 document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addSet(+b.dataset.add));
 
-initFold();bgInit();buildThemes();buildLogos();bindInputs();syncInputs();renderUI();
+initFold();bgInit();buildThemes();buildLogos();buildLineup();bindInputs();syncInputs();renderUI();
 loadPreview();$('pv').addEventListener('load',()=>{fitPreview();});fitPreview();
 const dbBefore=cfg.db;
 detectDb().then(u=>{if(cfg.db!==dbBefore)loadPreview();if(!u)setStatus('err','База Firebase не знайдена');return initialPull();}).then(()=>{renderUI();commit();});
