@@ -110,6 +110,82 @@ body.bg-black{background:#000}
   transition:opacity .6s ease,width .25s ease,transform .25s ease}
 .lg.on{opacity:1}
 
+/* ================= СКОРОЧЕНЕ МАЛЕ ТАБЛО ================= */
+#bug.compact{height:auto;gap:0}
+#bug.compact>.clockcap,#bug.compact>.team,#bug.compact>.score,#bug.compact>.stop{display:none}
+#bug:not(.compact)>#cbug{display:none}
+#cbug{position:relative;display:flex;align-items:center;height:88px}
+.cteam{display:flex;align-items:center}
+.cteam.away{flex-direction:row-reverse}
+.ccrest{position:relative;z-index:3;flex:none;display:flex;align-items:center;justify-content:center;height:88px}
+.ccrest .logo{height:88px;width:auto;max-width:112px}
+.cteam.home .ccrest{margin-right:-30px}
+.cteam.away .ccrest{margin-left:-30px}
+.cshort{min-width:104px;height:88px;padding:0 10px;display:flex;align-items:center;justify-content:center;border-radius:16px;font-size:44px;font-weight:800;letter-spacing:2px;color:var(--text);
+  background:linear-gradient(180deg,var(--p1),var(--p2) 55%,var(--p3));box-shadow:0 0 0 3px var(--edge),0 8px 18px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,calc(.35*var(--rel)));text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.cscore.relief{--g1:color-mix(in srgb,var(--k1) 78%,#fff);--g2:var(--k1);--g3:color-mix(in srgb,var(--k1) 66%,#000);
+  height:88px;min-width:150px;display:flex;align-items:center;justify-content:center;font-size:74px;font-weight:800;color:#fff;border-radius:14px;font-variant-numeric:tabular-nums}
+.cscore .n{display:block;text-shadow:0 3px 0 rgba(0,0,0,.45)}
+.cteam.home .cscore{padding-left:34px;padding-right:22px}
+.cteam.away .cscore{padding-right:34px;padding-left:22px}
+.cscore.pop .n{animation:pop 1s cubic-bezier(.2,1.4,.3,1)}
+.cscore.pop{animation:scoreflash 1.6s}
+.cmid{position:relative;z-index:2;flex:none;margin:0 -16px}
+.cemb{width:104px;height:104px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--s1),var(--s2));box-shadow:0 0 0 4px var(--edge),0 8px 20px rgba(0,0,0,.55)}
+.cemb .logo{height:76px;width:auto;max-width:84px}
+.ctimebox.relief{--g1:var(--s1);--g2:var(--s2);--g3:var(--s2);position:absolute;top:calc(100% - 6px);left:50%;transform:translateX(-50%);
+  height:48px;min-width:140px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 20px;font-size:40px;font-weight:800;color:var(--st);font-variant-numeric:tabular-nums;border-radius:10px;white-space:nowrap}
+.cstop{display:none;color:var(--c1);font-size:34px}
+.cstop.on{display:inline}
+#cbug.noemb .cemb{display:none}
+#cbug.noemb .cmid{margin:0 -10px}
+#cbug.noemb .ctimebox.relief{position:relative;top:auto;left:auto;transform:none;height:64px;min-width:160px;font-size:46px}
+
+/* ================= ТАБЛО СКЛАДУ ================= */
+#lineup{position:absolute;left:60px;top:40px;width:1800px;height:1000px;z-index:25;opacity:0;transform:translateY(30px) scale(.97);pointer-events:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,1.2,.3,1)}
+#lineup.on{opacity:1;transform:none}
+.lu-panel{position:absolute;inset:0;border-radius:8px;overflow:hidden;color:#fff;background:linear-gradient(180deg,color-mix(in srgb,var(--s1) 94%,transparent),color-mix(in srgb,var(--s2) 97%,transparent));box-shadow:0 0 0 2px var(--edge),0 24px 70px rgba(0,0,0,.65)}
+.lu-head{position:absolute;left:30px;right:30px;top:16px;height:100px;display:flex;align-items:center;gap:28px}
+.lu-crest{height:84px;display:flex;align-items:center;flex:none}
+.lu-crest .logo{height:84px;width:auto;max-width:130px}
+.lu-short{min-width:84px;height:84px;padding:0 14px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:40px;font-weight:800;background:linear-gradient(180deg,color-mix(in srgb,var(--k1) 80%,#fff),var(--k1));box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
+.lu-title{flex:1;min-width:0}
+.lu-tname{font-size:68px;font-weight:600;letter-spacing:12px;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lu-bar{width:300px;height:8px;margin-top:10px;background:var(--k1);box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.lu-form{text-align:right;font-size:92px;font-weight:500;letter-spacing:10px;color:var(--st);line-height:.95;flex:none}
+.lu-form small{display:block;font-size:20px;letter-spacing:6px;color:var(--sub);font-weight:700}
+.lu-left{position:absolute;left:24px;top:128px;width:1156px;height:760px}
+.lu-right{position:absolute;left:1204px;top:128px;width:572px;height:760px}
+.lu-cards{display:grid;gap:14px;align-content:start}
+.lu-card{display:flex;flex-direction:column;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.05);box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+.lu-photo{position:relative;flex:1;min-height:0;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.25));overflow:hidden}
+.lu-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.lu-photo svg{position:absolute;left:50%;bottom:0;width:70%;transform:translateX(-50%);opacity:.16}
+.lu-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.72));pointer-events:none}
+.lu-num{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-weight:500;line-height:1;z-index:2;text-shadow:0 3px 10px rgba(0,0,0,.6)}
+.lu-name{flex:none;height:var(--nh,56px);display:flex;align-items:center;justify-content:center;padding:0 8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,255,255,.08);border-top:4px solid var(--k1)}
+.lu-list{display:flex;flex-direction:column;gap:4px}
+.lu-row{height:64px;display:flex;align-items:center;gap:22px;background:rgba(255,255,255,.05);box-shadow:0 0 0 1px rgba(255,255,255,.1);border-left:8px solid var(--k1)}
+.lu-rn{width:90px;flex:none;text-align:center;font-size:46px;font-weight:700;color:var(--st)}
+.lu-rname{font-size:46px;font-weight:600;letter-spacing:4px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lu-pitch{position:relative;width:572px;height:690px;background:repeating-linear-gradient(180deg,rgba(255,255,255,.04) 0 69px,rgba(255,255,255,0) 69px 138px),rgba(255,255,255,.03);box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+.lu-pitch svg{position:absolute;inset:0;width:100%;height:100%}
+.lu-pitch svg *{fill:none;stroke:rgba(255,255,255,.28);stroke-width:2}
+.lu-mk{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;transform:translate(-50%,-50%)}
+.lu-dot{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--k1) 70%,#fff),var(--k1) 60%,color-mix(in srgb,var(--k1) 60%,#000));box-shadow:0 0 0 3px rgba(255,255,255,.85),0 5px 12px rgba(0,0,0,.5);text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.lu-mname{max-width:140px;padding:1px 10px;border-radius:4px;font-size:21px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(0,0,0,.62)}
+.lu-coach{position:absolute;left:0;right:0;top:704px;height:56px;display:flex;align-items:stretch}
+.lu-coach span{flex:none;padding:0 22px;display:flex;align-items:center;font-size:22px;font-weight:800;letter-spacing:4px;color:var(--ct);background:linear-gradient(180deg,var(--c1),var(--c2))}
+.lu-coach b{flex:1;min-width:0;padding:0 12px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:600;letter-spacing:4px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,255,255,.07)}
+.lu-subs{position:absolute;left:24px;right:24px;top:904px;height:60px;display:flex;align-items:stretch;background:rgba(255,255,255,.06);box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.lu-slab{flex:none;padding:0 26px;display:flex;align-items:center;font-size:24px;font-weight:800;letter-spacing:5px;color:var(--ct);background:linear-gradient(180deg,var(--c1),var(--c2))}
+.lu-slist{flex:1;min-width:0;padding:0 24px;display:flex;align-items:center;gap:30px;white-space:nowrap;overflow:hidden;font-size:32px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.lu-slist i{font-style:normal;color:var(--st);margin-right:8px;font-weight:700}
+#lineup.on:not(.settled) .lu-card,#lineup.on:not(.settled) .lu-row{animation:luUp .6s both cubic-bezier(.2,1.2,.3,1);animation-delay:var(--d,0ms)}
+#lineup.on:not(.settled) .lu-mk{animation:luPop .5s both cubic-bezier(.2,1.5,.3,1);animation-delay:calc(350ms + var(--d,0ms))}
+@keyframes luUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes luPop{from{opacity:0;transform:translate(-50%,-50%) scale(.2)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
 /* ================= ВЕЛИКИЙ НИЖНІЙ БАР ================= */
 #widewrap{position:absolute;z-index:10;pointer-events:none;transform:translate(calc(var(--ox,0)*1px),calc(var(--oy,0)*1px))}
 #widezoom{display:block}
@@ -262,6 +338,11 @@ body.bg-black{background:#000}
       <div class="team away relief" id="bAway" style="--i:4;--k1:#1b6cff;--k2:#fff">
         <div class="kit"><i></i></div><img class="logo" id="bAwayLogo" alt=""><div class="tname emb" id="bAwayName"></div>
       </div>
+      <div id="cbug" style="--i:0">
+        <div class="cteam home" id="cH"><div class="ccrest" id="ccH"><img class="logo" alt=""><span class="wshort cshort"></span></div><div class="cscore relief" id="cHS"><span class="n">0</span></div></div>
+        <div class="cmid"><div class="cemb"><img class="logo" id="cEmb" alt=""></div><div class="ctimebox relief" id="cTimeBox"><span id="cTime">00:00</span><span class="cstop" id="cStop">+0</span></div></div>
+        <div class="cteam away" id="cA"><div class="ccrest" id="ccA"><img class="logo" alt=""><span class="wshort cshort"></span></div><div class="cscore relief" id="cAS"><span class="n">0</span></div></div>
+      </div>
       <div class="stop relief" id="bStop">+0</div>
     </div>
   </div></div>
@@ -296,6 +377,8 @@ body.bg-black{background:#000}
 
   <div id="lower"><div class="lp relief"><div class="bar"></div><div class="lt"><div class="l1 emb" id="lw1"></div><div class="l2" id="lw2"></div></div></div></div>
 
+  <div id="lineup"><div class="lu-panel" id="luPanel"></div></div>
+
   <div id="fxlayer"></div>
 </div>
 
@@ -304,20 +387,23 @@ body.bg-black{background:#000}
 const PERIODS={pre:'ПЕРЕД МАТЧЕМ',p1:'1 ТАЙМ',ht:'ПЕРЕРВА',p2:'2 ТАЙМ',et1:'ДОД. ЧАС 1',et2:'ДОД. ЧАС 2',pens:'ПЕНАЛЬТІ',ft:'КІНЕЦЬ МАТЧУ'};
 const LIM={p1:45,p2:90,et1:105,et2:120};
 const LOGO_DEF=Object.fromEntries(Array.from({length:10},(_,i)=>['l'+(i+1),{on:false,rev:0,name:'',x:0,y:0,size:220}]));
+const mkLU=()=>({formation:'4-3-3',coach:'',starters:Array.from({length:11},()=>({n:'',name:'',photoRev:0})),subs:[]});
 const DEF={
   home:{name:'ГОСПОДАРІ',short:'HOM',c1:'#d7263d',c2:'#ffffff',logoRev:0,score:0},
   away:{name:'ГОСТІ',short:'AWY',c1:'#1b6cff',c2:'#ffffff',logoRev:0,score:0},
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:''},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:'',smallMode:'full'},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   logos:LOGO_DEF,
+  lineup:{home:mkLU(),away:mkLU()},
+  lu:{show:false,team:'home',label:'num',order:'att'},
   events:[],fx:null,rev:0
 };
 function merge(d,s){
-  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.slice());
+  if(Array.isArray(d)) return Array.isArray(s)?s:(s&&typeof s==='object'?Object.values(s):d.map(x=>(x&&typeof x==='object')?merge(x,undefined):x));
   if(d&&typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&s[k]);return o;}
   return (s===undefined||s===null)?d:s;
 }
@@ -386,6 +472,18 @@ function render(){
   setScore($('bHS'),S.home.score,'h');setScore($('bAS'),S.away.score,'a');
   // додатковий час
   const st=$('bStop');st.textContent='+'+S.added.val;st.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
+  // скорочене табло
+  const comp=S.ui.smallMode==='compact';bug.classList.toggle('compact',comp);
+  {
+    setKit($('cH'),S.home);setKit($('cA'),S.away);
+    setCrest('ccH',S.home);setCrest('ccA',S.away);
+    $('ccH').querySelector('.cshort').textContent=(S.home.short||S.home.name||'').slice(0,3).toUpperCase();
+    $('ccA').querySelector('.cshort').textContent=(S.away.short||S.away.name||'').slice(0,3).toUpperCase();
+    $('cHS').firstChild.textContent=S.home.score;$('cAS').firstChild.textContent=S.away.score;
+    setImg($('cEmb'),'e'+S.ui.emblemRev,S.ui.emblemRev);$('cbug').classList.toggle('noemb',!S.ui.emblemRev);
+    $('cTimeBox').style.display=S.clock.show?'':'none';
+    const cs=$('cStop');cs.textContent='+'+S.added.val;cs.classList.toggle('on',!!(S.added.show&&S.added.val>0&&S.clock.show));
+  }
   // показ/ховання табло
   const wantBug=!!S.ui.bug&&!(S.big.show&&S.ui.hideBugOnBig)&&!(S.ui.hideSmallOnWide&&sessionOn);
   renderWide(sessionOn);
@@ -410,6 +508,7 @@ function render(){
   const fx=S.fx;
   if(!initialized){lastFx=fx?fx.id:null;initialized=true;}
   else if(fx&&fx.id!==lastFx){lastFx=fx.id;if(Math.abs(Date.now()-fx.ts)<45000)playFx(fx);}
+  renderLineup();
   renderLogos();
   tick(true);
 }
@@ -417,6 +516,7 @@ function setScore(el,val,key){
   const n=el.firstChild;const prev=key==='h'?prevHS:prevAS;
   n.textContent=val;
   if(prev!==null&&prev!==val&&val>prev){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),1700);
+    const c2=$(key==='h'?'cHS':'cAS');c2.classList.remove('pop');void c2.offsetWidth;c2.classList.add('pop');setTimeout(()=>c2.classList.remove('pop'),1700);
     const t=$(key==='h'?'bHome':'bAway');t.classList.remove('goalglow');void t.offsetWidth;t.classList.add('goalglow');setTimeout(()=>t.classList.remove('goalglow'),2700);}
   if(key==='h')prevHS=val;else prevAS=val;
 }
@@ -441,7 +541,7 @@ function tick(force){
   const t=fmtClock(clockSec(),S.clock.period,S.clock.fmt);
   if(t!==lastT||force){lastT=t;$('bTime').textContent=t;}
   const per=S.clock.period;const w=['pre','ht','pens','ft'].includes(per)?(PERIODS[per]||t):t;
-  if(w!==lastW||force){lastW=w;$('wTime').textContent=w;}
+  if(w!==lastW||force){lastW=w;$('wTime').textContent=w;$('cTime').textContent=w;}
 }
 setInterval(tick,200);
 
@@ -497,6 +597,66 @@ function renderWide(show){
   $('wide').classList.toggle('hidden',!show);
   $('wscorers').classList.toggle('on',!!show);
   stage.classList.toggle('wide-on',!!show);
+}
+
+/* ===== Табло складу ===== */
+let luSig='',luTimer=null,luWasOn=false;
+const LU_SIL='<svg viewBox="0 0 100 120"><circle cx="50" cy="38" r="22" fill="#fff" stroke="none"/><path d="M8 120C8 78 30 66 50 66C70 66 92 78 92 120Z" fill="#fff" stroke="none"/></svg>';
+const LU_PITCH='<svg viewBox="0 0 572 690"><rect x="10" y="10" width="552" height="670"/><line x1="10" y1="345" x2="562" y2="345"/><circle cx="286" cy="345" r="72"/><rect x="116" y="10" width="340" height="132"/><rect x="200" y="10" width="172" height="50"/><rect x="116" y="548" width="340" height="132"/><rect x="200" y="630" width="172" height="50"/></svg>';
+function luPitchPos(L){
+  const f=String(L.formation||'').split(/[^0-9]+/).map(x=>parseInt(x,10)).filter(x=>x>0);
+  const pos=[{i:0,x:.5,y:.92}];let idx=1;const k=f.length;
+  for(let li=0;li<k;li++){
+    const cnt=f[li],y=k>1?0.75-(0.75-0.13)*(li/(k-1)):0.45,step=cnt>1?Math.min(.28,.8/(cnt-1)):0;
+    for(let j=0;j<cnt;j++){if(idx>=L.starters.length)break;pos.push({i:idx,x:.5+(j-(cnt-1)/2)*step,y});idx++;}
+  }
+  return pos;
+}
+function buildLineupBoard(t,L,T){
+  const el=$('lineup');el.style.setProperty('--k1',T.c1);el.style.setProperty('--k2',T.c2);
+  const st=(L.starters||[]).map(p=>Object.assign({n:'',name:'',photoRev:0},p));
+  const act=st.map((p,i)=>Object.assign({i},p)).filter(p=>p.n||p.name);
+  const anyPhoto=act.some(p=>p.photoRev);
+  const ord=S.lu.order==='gk'?act:act.slice().reverse();
+  const crest=T.logoRev?'<img class="logo" data-tl="1" alt="">':'<span class="lu-short">'+esc((T.short||T.name||'').slice(0,3).toUpperCase())+'</span>';
+  let left='';
+  if(anyPhoto){
+    const n=ord.length,cols=n<=3?Math.max(1,n):n<=8?4:6,rows=Math.ceil(n/cols);
+    const rowH=Math.min(620,Math.floor((760-(rows-1)*14)/rows));
+    const cardW=(1156-(cols-1)*14)/cols;
+    const nf=cols>=6?78:cols===4?110:150,nameF=cols>=6?24:cols===4?32:40,nh=cols>=6?50:cols===4?58:66;
+    left='<div class="lu-cards" style="grid-template-columns:repeat('+cols+',1fr);grid-auto-rows:'+rowH+'px;--nh:'+nh+'px">'+
+      ord.map((p,k)=>'<div class="lu-card" style="--d:'+(k*70)+'ms"><div class="lu-photo">'+(p.photoRev?'<img data-pk="'+p.photoRev+'" alt="">':LU_SIL)+
+      '<span class="lu-num" style="font-size:'+nf+'px">'+esc(p.n)+'</span></div><div class="lu-name" style="font-size:'+nameF+'px;letter-spacing:'+(cols>=6?1:3)+'px">'+esc(p.name)+'</div></div>').join('')+'</div>';
+  }else{
+    left='<div class="lu-list">'+ord.map((p,k)=>'<div class="lu-row" style="--d:'+(k*60)+'ms"><span class="lu-rn">'+esc(p.n)+'</span><span class="lu-rname">'+esc(p.name)+'</span></div>').join('')+'</div>';
+  }
+  const mode=S.lu.label||'num';
+  const mk=luPitchPos(L).map((q,k)=>{
+    const p=st[q.i];if(!p||!(p.n||p.name))return '';
+    const dot='<span class="lu-dot">'+esc(p.n||'•')+'</span>',nm='<span class="lu-mname">'+esc(p.name||p.n)+'</span>';
+    const inner=mode==='name'?nm:mode==='both'?dot+nm:dot;
+    return '<div class="lu-mk" style="left:'+(q.x*100).toFixed(2)+'%;top:'+(q.y*100).toFixed(2)+'%;--d:'+(k*50)+'ms">'+inner+'</div>';
+  }).join('');
+  const subs=(L.subs||[]).filter(p=>p&&(p.n||p.name));
+  const subsHtml=subs.length?'<div class="lu-subs"><span class="lu-slab">ЗАПАСНІ</span><div class="lu-slist">'+subs.map(p=>'<span>'+(p.n?'<i>'+esc(p.n)+'</i>':'')+esc(p.name||'')+'</span>').join('')+'</div></div>':'';
+  $('luPanel').innerHTML=
+    '<div class="lu-head"><div class="lu-crest">'+crest+'</div><div class="lu-title"><div class="lu-tname">'+esc(T.name)+'</div><div class="lu-bar"></div></div>'+
+    (L.formation?'<div class="lu-form"><small>СХЕМА</small>'+esc(L.formation)+'</div>':'')+'</div>'+
+    '<div class="lu-left">'+left+'</div>'+
+    '<div class="lu-right"><div class="lu-pitch">'+LU_PITCH+mk+'</div>'+(L.coach?'<div class="lu-coach"><span>ТРЕНЕР</span><b>'+esc(L.coach)+'</b></div>':'')+'</div>'+subsHtml;
+  const ci=$('luPanel').querySelector('img[data-tl]');if(ci)setTeamLogo(ci,T);
+  const sl=$('luPanel').querySelector('.lu-slist');
+  if(sl){let fs=32;while(sl.scrollWidth>sl.clientWidth&&fs>14){fs-=1;sl.style.fontSize=fs+'px';sl.style.gap=Math.max(10,fs-2)+'px';}}
+}
+function renderLineup(){
+  const t=S.lu.team==='away'?'away':'home',L=S.lineup[t],T=S[t];
+  const sig=JSON.stringify([t,L,T.c1,T.c2,T.name,T.short,T.logoRev,S.lu.label,S.lu.order]);
+  if(sig!==luSig){luSig=sig;buildLineupBoard(t,L,T);}
+  $('luPanel').querySelectorAll('img[data-pk]').forEach(im=>{const r=+im.dataset.pk;setImg(im,'p'+r,r);});
+  const on=!!S.lu.show,el=$('lineup');
+  if(on&&!luWasOn){el.classList.remove('settled');clearTimeout(luTimer);luTimer=setTimeout(()=>el.classList.add('settled'),2800);}
+  luWasOn=on;el.classList.toggle('on',on);
 }
 
 /* ===== Логотипи (до 10) ===== */
