@@ -435,7 +435,7 @@ const DEF={
   clock:{running:false,base:0,startedAt:0,period:'p1',fmt:'plus',show:true},
   added:{show:false,val:0},
   theme:'gold',
-  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:false,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:'',smallMode:'full',opSmall:0,opWide:0,opPlates:0,opBig:0,opLower:0,opSide:0,opLineup:0,v3:0},
+  ui:{pos:'tl',anim:'slide',scale:1,rel:1,names:'full',bug:true,hideBugOnBig:true,hideSmallOnWide:false,style:'classic',x:0,y:0,wScale:1,wX:0,wY:0,auto:true,autoDur:10,goalDelay:3,goalBanner:false,emblemRev:0,emblemName:'',smallMode:'full',opSmall:0,opWide:0,opPlates:0,opBig:0,opLower:0,opSide:0,opLineup:0,v3:1},
   big:{show:false,title:''},
   lower:{show:false,l1:'',l2:''},
   logos:LOGO_DEF,
@@ -606,8 +606,10 @@ function swapTeams(){
   syncInputs();commit();
 }
 function clearScore(){
-  if(!confirm('Очистити рахунок, голи й картки?\nНалаштування, логотипи та плашки залишаться.'))return;
-  S.home.score=0;S.away.score=0;S.events=[];S.fx=null;commit();
+  if(!confirm('Очистити рахунок, голи, картки й годинник?\nНалаштування, логотипи та плашки залишаться.'))return;
+  S.home.score=0;S.away.score=0;S.events=[];S.fx=null;
+  S.clock.running=false;S.clock.base=0;S.clock.startedAt=0;S.clock.period='p1';S.added.show=false;S.added.val=0;
+  syncInputs();if(typeof renderUI==='function')renderUI();commit();
 }
 async function resetMatch(){
   if(!confirm('СКИНУТИ МАТЧ?\nБуде видалено все з Firebase: рахунок, налаштування, теми, назви, логотипи й емблеми. Все стане як за замовчуванням.'))return;
